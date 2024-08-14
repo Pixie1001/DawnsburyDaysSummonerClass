@@ -396,3 +396,6 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+DawnsburyDaysSummonerClass/DawnsburyDaysSummonerClass.csproj
+DawnsburyDaysSummonerClass/ReferenceCode.cs
+DawnsburyDaysSummonerClass.sln
