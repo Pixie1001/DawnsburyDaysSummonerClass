@@ -153,6 +153,9 @@ namespace Dawnsbury.Mods.Classes.Summoner {
         private static Trait tSummoner = ModManager.RegisterTrait("SummonerClass", GenerateClassProperty(new TraitProperties("Summoner", true)));
         private static Trait tEidolon = ModManager.RegisterTrait("EidolonCompanion", new TraitProperties("Eidolon", true));
         private static Trait tAngelicEidolonArray = ModManager.RegisterTrait("AngelicEidolonArray", new TraitProperties("Eidolon Array", false));
+        private static Trait tPrimaryAttackType = ModManager.RegisterTrait("EidolonPrimaryWeaponType", new TraitProperties("Eidolon Primary Weapon Type", false));
+        private static Trait tPrimaryAttackStats = ModManager.RegisterTrait("EidolonPrimaryWeaponStats", new TraitProperties("Eidolon Primary Weapon Stats", false));
+        private static Trait tSecondaryAttackType = ModManager.RegisterTrait("EidolonSecondaryWeaponType", new TraitProperties("Eidolon Secondary Weapon Type", false));
 
         // Feat names
         private static FeatName scAngelicEidolon = ModManager.RegisterFeatName("Angelic Eidolon");
@@ -162,13 +165,40 @@ namespace Dawnsbury.Mods.Classes.Summoner {
         private static FeatName scDraconicEidolon = ModManager.RegisterFeatName("Draconic Eidolon");
         private static FeatName scBeastEidolon = ModManager.RegisterFeatName("Beast Eidolon");
 
+        // Primary Weapon Feat Names
+        private static FeatName ftPSword = ModManager.RegisterFeatName("P_Sword", "Sword");
+        private static FeatName ftPPolearm = ModManager.RegisterFeatName("P_Polearm", "Polearm");
+        private static FeatName ftPMace = ModManager.RegisterFeatName("P_Mace", "Mace");
+        private static FeatName ftPWing = ModManager.RegisterFeatName("P_Wing", "Wing");
+        private static FeatName ftPKick = ModManager.RegisterFeatName("P_Kick", "Kick");
+        private static FeatName ftPClaw = ModManager.RegisterFeatName("P_Claw", "Claw");
+        private static FeatName ftPJaws = ModManager.RegisterFeatName("P_Jaws", "Jaws");
+        private static FeatName ftPFist = ModManager.RegisterFeatName("P_Fist", "Fist");
+        private static FeatName ftPTendril = ModManager.RegisterFeatName("P_Tendril", "Tendril");
+        private static FeatName ftPHorn = ModManager.RegisterFeatName("P_Horn", "Horn");
+        private static FeatName ftPTail = ModManager.RegisterFeatName("P_Tail", "Tail");
+
+        // Primary Weapon Statblock Feat Names
+        private static FeatName ftPSPowerful = ModManager.RegisterFeatName("PS_Powerful", "Powerful");
+        private static FeatName ftPSFatal = ModManager.RegisterFeatName("PS_Fatal", "Fatal");
+        private static FeatName ftPSUnstoppable = ModManager.RegisterFeatName("PS_Unstoppable", "Unstoppable");
+        private static FeatName ftPSGraceful = ModManager.RegisterFeatName("PS_Graceful", "Graceful");
+
+        // Secondary Weapon Feat Names
+        private static FeatName ftSWing = ModManager.RegisterFeatName("S_Wing", "Wing");
+        private static FeatName ftSKick = ModManager.RegisterFeatName("S_Kick", "Kick");
+        private static FeatName ftSClaw = ModManager.RegisterFeatName("S_Claw", "Claw");
+        private static FeatName ftSJaws = ModManager.RegisterFeatName("S_Jaws", "Jaws");
+        private static FeatName ftSFist = ModManager.RegisterFeatName("S_Fist", "Fist");
+        private static FeatName ftSTendril = ModManager.RegisterFeatName("S_Tendril", "Tendril");
+        private static FeatName ftSHorn = ModManager.RegisterFeatName("S_Horn", "Horn");
+        private static FeatName ftSTail = ModManager.RegisterFeatName("S_Tail", "Tail");
+
         // QEffectIDs
         private static QEffectId qfMasterOfEidolon = ModManager.RegisterEnumMember<QEffectId>("Controller of an Eidolon");
         private static QEffectId qfSlavedEidolon = ModManager.RegisterEnumMember<QEffectId>("Summoner's Eidolon");
         private static QEffectId qfSharedActions = ModManager.RegisterEnumMember<QEffectId>("Shared Actions");
 
-        // Combat Actions
-        //private static CombatAction caShareHP = new CombatAction(Battle.Pseudocreature, null, "Share HP", new Trait[0], "", new UncastableTarget());
 
         // Spells
         private static SpellId spEvolutionSurge = ModManager.RegisterNewSpell("EvolutionSurge", 1, ((spellId, spellcaster, spellLevel, inCombat, spellInformation) => {
@@ -223,7 +253,7 @@ namespace Dawnsbury.Mods.Classes.Summoner {
             "cassisian angel instead. The two of you are destined for an important role in the plans of the celestial realms. Though a true angel, your angel eidolon's link to you as a mortal prevents them " +
             "from casting the angelic messenger ritual, even if they somehow learn it.";
 
-        private static readonly string AngelicEidolonCrunch = "\n\n\u2022 {b}Tradition{/b} Divine\n\u2022{b}Skills{/b} Diplomacy, Religion\n\u2022Hallowed Strikes: Your Eidolon's strikes deal +1 spirit damage.";
+        private static readonly string AngelicEidolonCrunch = "\n\n\u2022 {b}Tradition{/b} Divine\n\u2022 {b}Skills{/b} Diplomacy, Religion\n\u2022 Hallowed Strikes: Your Eidolon's strikes deal +1 good damage.";
 
         [DawnsburyDaysModMainMethod]
         public static void LoadMod() {
@@ -239,7 +269,7 @@ namespace Dawnsbury.Mods.Classes.Summoner {
         private static IEnumerable<Feat> CreateFeats() {
             // Init subclasses
             // [Trait.Angel, Trait.Celestial, Trait.Eidolon]
-            Feat angelicEidolon = new Eidolon(scAngelicEidolon, AngelicEidolonFlavour, AngelicEidolonCrunch, Trait.Divine, new List<Trait>() { Trait.Religion, Trait.Diplomacy }, (List<Feat>)null)
+            Feat angelicEidolon = new Eidolon(scAngelicEidolon, AngelicEidolonFlavour, AngelicEidolonCrunch, Trait.Divine, new List<FeatName>() { FeatName.Religion, FeatName.Diplomacy }, (List<Feat>)null)
                 .WithOnSheet((Action<CalculatedCharacterSheetValues>)(values => {
                     values.AddSelectionOption((SelectionOption)new SingleFeatSelectionOption("AngelicEidolonArray", "Eidolon Array", 1, (Func<Feat, bool>)(feat => feat.HasTrait(tAngelicEidolonArray))));
                 }));
@@ -252,7 +282,75 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                 new EnforcedAbilityBoost(Ability.Charisma), 10, new Trait[5] { Trait.Unarmed, Trait.Simple, Trait.UnarmoredDefense, Trait.Reflex, Trait.Perception }, new Trait[2] { Trait.Fortitude, Trait.Will }, 3, SummonerCrunch, new List<Feat>() { angelicEidolon })
                     .WithOnSheet((Action<CalculatedCharacterSheetValues>)(sheet => {
                         sheet.AddFocusSpellAndFocusPoint(tSummoner, Ability.Charisma, spEvolutionSurge);
+                        sheet.AddSelectionOption(new SingleFeatSelectionOption("EidolonPrimaryWeaponStats", "Eidolon Primary Weapon Stats", 1, (Func<Feat, bool>)(ft => ft.HasTrait(tPrimaryAttackStats))));
+                        sheet.AddSelectionOption(new SingleFeatSelectionOption("EidolonPrimaryWeapon", "Primary Natural Weapon", 1, (Func<Feat, bool>)(ft => ft.HasTrait(tPrimaryAttackType))));
+                        sheet.AddSelectionOption(new SingleFeatSelectionOption("EidolonSecondaryWeapon", "Secondary Natural Weapon", 1, (Func<Feat, bool>)(ft => ft.HasTrait(tSecondaryAttackType))));
                     })).WithRulesBlockForSpell(spEvolutionSurge, tSummoner).WithIllustration((Illustration)IllustrationName.GravityWeapon);
+
+            // Init Natural Attack Options
+            yield return new Feat(ftPSword, "Your eidolon wields a sword, or possess a natural blade-like appendage.", "Your eidolon's primary attack deals Slashing damage.", new List<Trait> { tPrimaryAttackType, Trait.Strike }, null).WithIllustration(IllustrationName.Longsword);
+            yield return new Feat(ftPPolearm, "Your eidolon wields a spear or lance, or possess a natural spear-like appendage.", "Your eidolon's primary attack deals Piercing damage.", new List<Trait> { tPrimaryAttackType, Trait.Strike }, null).WithIllustration(IllustrationName.Spear);
+            yield return new Feat(ftPMace, "Your eidolon wields a mace, or possess a natural mace-like appendage.", "Your eidolon's primary attack deals Bludgeoning damage.", new List<Trait> { tPrimaryAttackType, Trait.Strike }, null).WithIllustration(IllustrationName.Warhammer);
+            yield return new Feat(ftPWing, "Your eidolon knocks its enemies aside with a pair of powerful wings.", "Your eidolon's primary attack deals Bludgeoning damage.", new List<Trait> { tPrimaryAttackType, Trait.Strike }, null).WithIllustration(IllustrationName.Wing);
+            yield return new Feat(ftPKick, "Your eidolon possesses a powerful kick.", "Your eidolon's primary attack deals Bludgeoning damage.", new List<Trait> { tPrimaryAttackType, Trait.Strike }, null).WithIllustration(IllustrationName.KineticRam);
+            yield return new Feat(ftPClaw, "Your eidolon possesses razor sharp claws.", "Your eidolon's primary attack deals Slashing damage.", new List<Trait> { tPrimaryAttackType, Trait.Strike }, null).WithIllustration(IllustrationName.DragonClaws);
+            yield return new Feat(ftPJaws, "Your eidolon possesses powerful bite attack.", "Your eidolon's primary attack deals Piercing damage.", new List<Trait> { tPrimaryAttackType, Trait.Strike }, null).WithIllustration(IllustrationName.Jaws);
+            yield return new Feat(ftPFist, "Your eidolon tears or pummels its enemies apart with its bare hands.", "Your eidolon's primary attack deals Bludgeoning damage.", new List<Trait> { tPrimaryAttackType, Trait.Strike }, null).WithIllustration(IllustrationName.Fist);
+            yield return new Feat(ftPTendril, "Your eidolon possesses crushing tendrils.", "Your eidolon's primary attack deals Bludgeoning damage.", new List<Trait> { tPrimaryAttackType, Trait.Strike }, null).WithIllustration(IllustrationName.Tentacle);
+            yield return new Feat(ftPHorn, "Your eidolon possesses vicious horns to gore its enemies.", "Your eidolon's primary attack deals Piercing damage.", new List<Trait> { tPrimaryAttackType, Trait.Strike }, null).WithIllustration(IllustrationName.Horn);
+            yield return new Feat(ftPTail, "Your eidolon possesses deadly stinging tail.", "Your eidolon's primary attack deals Piercing damage.", new List<Trait> { tPrimaryAttackType, Trait.Strike }, null).WithIllustration(IllustrationName.Tail);
+
+            yield return new Feat(ftSWing, "Your eidolon knocks its enemies aside with a pair of powerful wings.", "Your eidolon's secondary attack deals 1d6 bludgeoning damage, with the agile and finesse traits." +
+                "\n\n{b}" + Trait.Agile.GetTraitProperties().HumanizedName + "{/b} " + Trait.Agile.GetTraitProperties().RulesText +
+                "\n{b}" + Trait.Finesse.GetTraitProperties().HumanizedName + "{/b} " + Trait.Finesse.GetTraitProperties().RulesText,
+                new List<Trait> { tSecondaryAttackType, Trait.Strike }, null).WithIllustration(IllustrationName.Wing);
+            yield return new Feat(ftSKick, "Your eidolon possesses a powerful kick.", "Your eidolon's secondary attack deals 1d6 bludgeoning damage, with the agile and finesse traits." +
+                "\n\n{b}" + Trait.Agile.GetTraitProperties().HumanizedName + "{/b} " + Trait.Agile.GetTraitProperties().RulesText +
+                "\n{b}" + Trait.Finesse.GetTraitProperties().HumanizedName + "{/b} " + Trait.Finesse.GetTraitProperties().RulesText,
+                new List<Trait> { tSecondaryAttackType, Trait.Strike }, null).WithIllustration(IllustrationName.KineticRam);
+            yield return new Feat(ftSClaw, "Your eidolon possesses razor sharp claws.", "Your eidolon's secondary attack deals 1d6 slashing damage, with the agile and finesse traits." +
+                "\n\n{b}" + Trait.Agile.GetTraitProperties().HumanizedName + "{/b} " + Trait.Agile.GetTraitProperties().RulesText +
+                "\n{b}" + Trait.Finesse.GetTraitProperties().HumanizedName + "{/b} " + Trait.Finesse.GetTraitProperties().RulesText,
+                new List<Trait> { tSecondaryAttackType, Trait.Strike }, null).WithIllustration(IllustrationName.DragonClaws);
+            yield return new Feat(ftSJaws, "Your eidolon possesses powerful bite attack.", "Your eidolon's secondary attack deals 1d6 piercing damage, with the agile and finesse traits." +
+                "\n\n{b}" + Trait.Agile.GetTraitProperties().HumanizedName + "{/b} " + Trait.Agile.GetTraitProperties().RulesText +
+                "\n{b}" + Trait.Finesse.GetTraitProperties().HumanizedName + "{/b} " + Trait.Finesse.GetTraitProperties().RulesText,
+                new List<Trait> { tSecondaryAttackType, Trait.Strike }, null).WithIllustration(IllustrationName.Jaws);
+            yield return new Feat(ftSFist, "Your eidolon tears or pummels its enemies apart with its bare hands.", "Your eidolon's secondary attack deals 1d6 bludgeoning damage, with the agile and finesse traits." +
+                "\n\n{b}" + Trait.Agile.GetTraitProperties().HumanizedName + "{/b} " + Trait.Agile.GetTraitProperties().RulesText +
+                "\n{b}" + Trait.Finesse.GetTraitProperties().HumanizedName + "{/b} " + Trait.Finesse.GetTraitProperties().RulesText,
+                new List<Trait> { tSecondaryAttackType, Trait.Strike }, null).WithIllustration(IllustrationName.Fist);
+            yield return new Feat(ftSTendril, "Your eidolon possesses crushing tendrils.", "Your eidolon's secondary attack deals 1d6 bludgeoning damage, with the agile and finesse traits." +
+                "\n\n{b}" + Trait.Agile.GetTraitProperties().HumanizedName + "{/b} " + Trait.Agile.GetTraitProperties().RulesText +
+                "\n{b}" + Trait.Finesse.GetTraitProperties().HumanizedName + "{/b} " + Trait.Finesse.GetTraitProperties().RulesText,
+                new List<Trait> { tSecondaryAttackType, Trait.Strike }, null).WithIllustration(IllustrationName.Tentacle);
+            yield return new Feat(ftSHorn, "Your eidolon possesses vicious horns to gore its enemies.", "Your eidolon's secondary attack deals 1d6 piercing damage, with the agile and finesse traits." +
+                "\n\n{b}" + Trait.Agile.GetTraitProperties().HumanizedName + "{/b} " + Trait.Agile.GetTraitProperties().RulesText +
+                "\n{b}" + Trait.Finesse.GetTraitProperties().HumanizedName + "{/b} " + Trait.Finesse.GetTraitProperties().RulesText,
+                new List<Trait> { tSecondaryAttackType, Trait.Strike }, null).WithIllustration(IllustrationName.Horn);
+            yield return new Feat(ftSTail, "Your eidolon possesses deadly stinging tail.", "Your eidolon's secondary attack deals 1d6 piercing damage, with the agile and finesse traits." +
+                "\n\n{b}" + Trait.Agile.GetTraitProperties().HumanizedName + "{/b} " + Trait.Agile.GetTraitProperties().RulesText +
+                "\n{b}" + Trait.Finesse.GetTraitProperties().HumanizedName + "{/b} " + Trait.Finesse.GetTraitProperties().RulesText,
+                new List<Trait> { tSecondaryAttackType, Trait.Strike }, null).WithIllustration(IllustrationName.Tail);
+
+            // Init Primary Weapon Properties
+            yield return new Feat(ftPSPowerful, "Your eidolon possesses great strength, allowing it to easily bully and subdue its enemies.", "Your eidolon's primary deals 1d8 damage, and has the disarm, nonlethal, shove and trip traits. Athletics checks made using a weapon with a maneovre trait benefit from the item bonus on your handwraps of mighty blows." +
+                "\n\n{b}" + Trait.Disarm.GetTraitProperties().HumanizedName + "{/b} " + Trait.Disarm.GetTraitProperties().RulesText +
+                "\n{b}" + Trait.Nonlethal.GetTraitProperties().HumanizedName + "{/b} " + Trait.Nonlethal.GetTraitProperties().RulesText +
+                "\n{b}" + Trait.Disarm.GetTraitProperties().HumanizedName + "{/b} " + Trait.Disarm.GetTraitProperties().RulesText +
+                "\n{b}" + Trait.Trip.GetTraitProperties().HumanizedName + "{/b} " + Trait.Trip.GetTraitProperties().RulesText,
+                new List<Trait> { tPrimaryAttackStats, Trait.Strike, Trait.Disarm, Trait.Nonlethal, Trait.Shove, Trait.Trip }, null);
+            yield return new Feat(ftPSFatal, "Your eidolon waits patiently for the perfect opportunity before closing in on its foes.", "Your eidolon's primary attack deals 1d6 damage, and has the fatal d10 traits." +
+                "\n\n{b}" + Trait.FatalD10.GetTraitProperties().HumanizedName + "{/b} " + Trait.FatalD10.GetTraitProperties().RulesText,
+                new List<Trait> { tPrimaryAttackStats, Trait.Strike, Trait.FatalD10 }, null);
+            yield return new Feat(ftPSUnstoppable, "Your eidolon's attacks pick up speed and momentum as it fights.", "Your eidolon's primary attack deals 1d6 damage, and has the forceful and sweep traits." +
+                "\n\n{b}" + Trait.Forceful.GetTraitProperties().HumanizedName + "{/b} " + Trait.Forceful.GetTraitProperties().RulesText +
+                "\n{b}" + Trait.Sweep.GetTraitProperties().HumanizedName + "{/b} " + Trait.Sweep.GetTraitProperties().RulesText,
+                new List<Trait> { tPrimaryAttackStats, Trait.Strike, Trait.Forceful, Trait.Sweep }, null);
+            yield return new Feat(ftPSGraceful, "Your eidolon possesses dexterous and opportunisitic natural weapons.", "Your eidolon's primary attack deals 1d6 damage, and has the deadly d8 and finesse traits." +
+                "\n\n{b}" + Trait.DeadlyD8.GetTraitProperties().HumanizedName + "{/b} "+ Trait.DeadlyD8.GetTraitProperties().RulesText +
+                "\n{b}" + Trait.Finesse.GetTraitProperties().HumanizedName + "{/b} " + Trait.Finesse.GetTraitProperties().RulesText,
+                new List<Trait> { tPrimaryAttackStats, Trait.Strike, Trait.DeadlyD8, Trait.Finesse }, null);
         }
 
         private static Creature? GetSummoner(Creature eidolon) {
@@ -270,12 +368,13 @@ namespace Dawnsbury.Mods.Classes.Summoner {
 
 
         public class Eidolon : Feat {
-            public Eidolon(FeatName featName, string flavorText, string rulesText, Trait spellList, List<Trait> skills, List<Feat> subfeats) : base(featName, flavorText, rulesText, new List<Trait>(), subfeats) {
+            public Eidolon(FeatName featName, string flavorText, string rulesText, Trait spellList, List<FeatName> skills, List<Feat> subfeats) : base(featName, flavorText, rulesText, new List<Trait>(), subfeats) {
                 this.OnSheet = (Action<CalculatedCharacterSheetValues>)(sheet => {
                     sheet.SpellTraditionsKnown.Add(spellList);
                     sheet.SpellRepertoires.Add(tSummoner, new SpellRepertoire(Ability.Charisma, spellList));
-                    foreach (Trait skill in skills) {
-                        sheet.SetProficiency(skill, Proficiency.Trained);
+                    foreach (FeatName skill in skills) {
+                        sheet.GrantFeat(skill);
+                        //sheet.SetProficiency(skill, Proficiency.Trained);
                     }
                     SpellRepertoire repertoire = sheet.SpellRepertoires[tSummoner];
                     sheet.AddSelectionOption((SelectionOption)new AddToSpellRepertoireOption("SummonerCantrips", "Cantrips", 1, tSummoner, spellList, 0, 5));
@@ -328,7 +427,7 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                     Creature? eidolon = GetEidolon(qfSummoner.Owner);
                     if (eidolon == null || !eidolon.Actions.CanTakeActions())
                         return (Possibility)null;
-                    return (Possibility)(ActionPossibility)new CombatAction(qfSummoner.Owner, eidolon.Illustration, "Command your Eidolon", new Trait[0], "Swap to Eidolon.", (Target)Target.Self()) {
+                    return (Possibility)(ActionPossibility)new CombatAction(qfSummoner.Owner, eidolon.Illustration, "Command your Eidolon", new Trait[1] { Trait.Basic }, "Swap to Eidolon.", (Target)Target.Self()) {
                         ShortDescription = "Take control of your Eidolon, using your shared action pool."
                     }.WithEffectOnSelf((Func<Creature, Task>)(async self => {
                         await EidolonActs(summoner, eidolon);
@@ -490,18 +589,59 @@ namespace Dawnsbury.Mods.Classes.Summoner {
         //++combatActionExecution.user.Actions.AttackedThisManyTimesThisTurn
 
         private static Creature CreateEidolon(FeatName featName, IllustrationName token, int[] abilityScores, int ac, int dexCap, Creature summoner) {
-            Creature creature1;
-            creature1 = CreateEidolonBase(token, "Eidolon", summoner, abilityScores, ac, dexCap).WithUnarmedStrike(new Item((Illustration)IllustrationName.Jaws, "jaws", new Trait[2] {
-                    Trait.Unarmed,
-                    Trait.Finesse}).WithWeaponProperties(new WeaponProperties("1d6", DamageKind.Piercing))).WithAdditionalUnarmedStrike(CommonItems.CreateNaturalWeapon(IllustrationName.Wing, "wing", "1d4", DamageKind.Slashing, Trait.Agile, Trait.Finesse));
+            Creature eidolon = CreateEidolonBase(token, "Eidolon", summoner, abilityScores, ac, dexCap);
 
+            //.WithUnarmedStrike(new Item((Illustration)IllustrationName.Jaws, "jaws", new Trait[2] {
+            //    Trait.Unarmed,
+            //    Trait.Finesse}).WithWeaponProperties(new WeaponProperties("1d6", DamageKind.Piercing))).WithAdditionalUnarmedStrike(CommonItems.CreateNaturalWeapon(IllustrationName.Wing, "wing", "1d4", DamageKind.Slashing, Trait.Agile, Trait.Finesse));
+
+            // Generate natural weapon attacks
+            Feat pAttack = summoner.PersistentCharacterSheet.Calculated.AllFeats.FirstOrDefault((Func<Feat, bool>)(ft => ft.HasTrait(tPrimaryAttackType)));
+            Feat sAttack = summoner.PersistentCharacterSheet.Calculated.AllFeats.FirstOrDefault((Func<Feat, bool>)(ft => ft.HasTrait(tSecondaryAttackType)));
+            Feat pStatsFeat = summoner.PersistentCharacterSheet.Calculated.AllFeats.FirstOrDefault((Func<Feat, bool>)(ft => ft.HasTrait(tPrimaryAttackStats)));
+            List<Trait> pStats = new List<Trait>() { Trait.Unarmed };
+            for (int i = 2; i < pStatsFeat.Traits.Count ; i++) {
+                pStats.Add(pStatsFeat.Traits[i]);
+            }
+
+            DamageKind primaryDamageType;
+            if (new FeatName[] { ftPMace, ftPWing, ftPKick, ftPFist, ftPTendril }.Contains(pAttack.FeatName)) {
+                primaryDamageType = DamageKind.Bludgeoning;
+            } else if (new FeatName[] { ftPPolearm, ftPHorn, ftPTail }.Contains(pAttack.FeatName)) {
+                primaryDamageType = DamageKind.Piercing;
+            } else {
+                primaryDamageType = DamageKind.Slashing;
+            }
+
+            DamageKind secondaryDamageType;
+            if (new FeatName[] { ftSWing, ftSKick, ftSFist, ftSTendril }.Contains(pAttack.FeatName)) {
+                secondaryDamageType = DamageKind.Bludgeoning;
+            } else if (new FeatName[] { ftSHorn, ftSTail }.Contains(pAttack.FeatName)) {
+                secondaryDamageType = DamageKind.Piercing;
+            } else {
+                secondaryDamageType = DamageKind.Slashing;
+            }
+
+            string damage = "1d6";
+            if (pStatsFeat.FeatName == ftPSPowerful) {
+                damage = "1d8";
+            }
+
+            // #TODO: Map these to feat names
+            Illustration pIcon = pAttack.Illustration;
+            Illustration sIcon = sAttack.Illustration;
+
+            Illustration test = IllustrationName.Tail;
+
+            eidolon.WithUnarmedStrike(new Item(pIcon, pAttack.CustomName, pStats.ToArray()).WithWeaponProperties(new WeaponProperties(damage, primaryDamageType)));
+            eidolon.WithAdditionalUnarmedStrike(new Item(sIcon, sAttack.CustomName, new Trait[] { Trait.Unarmed, Trait.Agile, Trait.Finesse }).WithWeaponProperties(new WeaponProperties("1d6", secondaryDamageType)));
 
             //if (featName == scAngelicEidolon) {
 
             //} else {
             //    throw new Exception("Unknown animal companion.");
             //}
-            Creature eidolon = creature1;
+
             eidolon.PostConstructorInitialization(TBattle.Pseudobattle);
             return eidolon;
         }
@@ -532,7 +672,7 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                         if (summoner == null || !summoner.Actions.CanTakeActions())
                             return (Possibility)null;
                         return (Possibility)(ActionPossibility)new CombatAction(qfEidolon.Owner, summoner.Illustration, "Return Control",
-                            new Trait[0], $"Switch back to controlling {summoner.Name}. All unspent actions will be retained.", (Target)Target.Self((Func<Creature, AI, float>)((cr, ai) =>
+                            new Trait[1] { Trait.Basic }, $"Switch back to controlling {summoner.Name}. All unspent actions will be retained.", (Target)Target.Self((Func<Creature, AI, float>)((cr, ai) =>
                             (float)int.MinValue))).WithActionCost(0).WithActionId(ActionId.EndTurn).WithEffectOnSelf((Action<Creature>)(a => a.Actions.WishesToEndTurn = true));
                     }),
                     YouAcquireQEffect = (Func<QEffect, QEffect, QEffect?>)((qfVanishOnDeath, qfNew) => {
