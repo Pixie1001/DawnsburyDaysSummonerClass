@@ -20,6 +20,7 @@ namespace Dawnsbury.Mods.Classes.Summoner {
         public List<CombatAction>? ActionHistory { get; set; }
         public bool LoggedThisTurn { get; set; }
         public int HP { get; set; }
+        public int TempHP { get; set; }
         private CombatAction ca;
         public CombatAction CA { get { return ca; } }
 
@@ -42,9 +43,10 @@ namespace Dawnsbury.Mods.Classes.Summoner {
             LoggedThisTurn = false;
         }
 
-        public void LogAction(int currHP, CombatAction? action, Creature? creature, SummonerClassEnums.InterceptKind type) {
+        public void LogAction(Creature self, CombatAction? action, Creature? creature, SummonerClassEnums.InterceptKind type) {
             Type = type;
-            HP = currHP;
+            HP = self.HP;
+            TempHP = self.TemporaryHP;
             LoggedAction = action;
             LoggedCreature = creature;
             if (creature != null) {
@@ -55,11 +57,11 @@ namespace Dawnsbury.Mods.Classes.Summoner {
             LoggedThisTurn = true;
         }
 
-        public SummonerClassEnums.EffectKind HealOrHarm(int currHP) {
-            if (this.HP > currHP) {
+        public SummonerClassEnums.EffectKind HealOrHarm(Creature owner) {
+            if (this.HP + this.TempHP > owner.HP + owner.TemporaryHP) {
                 return SummonerClassEnums.EffectKind.HARM;
             }
-            if (this.HP < currHP) {
+            if (this.HP < owner.HP) {
                 return SummonerClassEnums.EffectKind.HEAL;
             }
             return SummonerClassEnums.EffectKind.NONE;
@@ -67,7 +69,7 @@ namespace Dawnsbury.Mods.Classes.Summoner {
 
         public bool CompareEffects(HPShareEffect effectLog) {
             if (this.LoggedAction == effectLog.LoggedAction && this.LoggedCreature == effectLog.LoggedCreature && this.ActionHistory == effectLog.ActionHistory && this.LoggedThisTurn == effectLog.LoggedThisTurn) {
-                if (this.HealOrHarm(this.Owner.HP) == effectLog.HealOrHarm(effectLog.Owner.HP)) {
+                if (this.HealOrHarm(this.Owner) == effectLog.HealOrHarm(effectLog.Owner)) {
                     return true;
                 }
             }
