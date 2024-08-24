@@ -94,7 +94,6 @@ namespace Dawnsbury.Mods.Classes.Summoner {
         public static Trait tVersatileB = ModManager.RegisterTrait("SummonerVersatileB", new TraitProperties("Versatile B", true, "This damage deals its normal damage or blugeoning damage, whichever is better for you."));
         public static Trait tBreathWeaponArea = ModManager.RegisterTrait("SummonerBreathWeaponArea", new TraitProperties("Breath Weapon Area", false));
         public static Trait tDragonType = ModManager.RegisterTrait("SummonerDragonType", new TraitProperties("Dragon Type", false));
-        public static Trait tRemaster = ModManager.RegisterTrait("SummonerRemasterContent", new TraitProperties("Remaster", true));
         public static Trait tPortrait = ModManager.RegisterTrait("EidolonPortrait", new TraitProperties("Portrait", true));
         public static Trait tPortraitCategory = ModManager.RegisterTrait("EidolonPortraitCategory", new TraitProperties("Portrait Category", true));
         public static Trait tOutsider = ModManager.RegisterTrait("EidolonPortraitOutsiderCategory", new TraitProperties("Outsider", true));
@@ -221,6 +220,11 @@ namespace Dawnsbury.Mods.Classes.Summoner {
             "You can't use breath weapon again for 1d4 rounds. This damage increases by 1d6 at 3rd level and every two levels thereafter.\n\n{b}Special.{/b} " +
             "You must select a specific breed for your dragon. This will determine your spell tradition, one of your bonus skills and the damage type of your eidolon's breath weapon. Your dragon's type also determines the save targeted by its breath weapon.";
 
+        //private static readonly string DraconicEidolonCrunch = "\n\n• {b}Tradition{/b} Arcane\n• {b}Skills{/b} Arcana, Intimidation" +
+        //    "\n\n{b}Eidolon Ability (Breath Weapon).{/b} {icon:TwoActions} Your eidolon exhales a 60-foot line or 30-foot cone of energy and deal 2d6 of the damage associated with your eidolon's dragon type to each target. " +
+        //    "You can't use breath weapon again for 1d4 rounds. This damage increases by 1d6 at 3rd level and every two levels thereafter.\n\n{b}Special.{/b} " +
+        //    "You must select a specific breed for your dragon. This will determine the damage type of your eidolon's breath weapon and the save it targets.";
+
         private static readonly string BeastEidolonFlavour = "Your eidolon is a manifestation of the life force of nature in the form of a powerful magical beast that often has animal features, possibly even several from different species. " +
             "You might have learned the way to connect with the world's life force via a specific philosophy or practice, such as the beliefs of the god callers of Sarkoris, or formed a bond on your own. Regardless, your link to your eidolon " +
             "allows you both to grow in power and influence to keep your home safe from those who would despoil it.";
@@ -250,22 +254,30 @@ namespace Dawnsbury.Mods.Classes.Summoner {
         private static IEnumerable<Feat> CreateFeats() {
             string[] divineTypes = new string[] { "Angelic Eidolon", "Empyreal Dragon", "Diabolic Dragon", "Azata Eidolon", "Psychopmp Eidolon", "Demonic Eidolon", "Devil Eidolon" };
 
+            //string rootLocation = new FileInfo("../").Directory.Parent.Parent.FullName;
+            //Directory.GetFiles(typeof(SomeTypeInsideYourDll).Location.Fullname.Directory
+            //rootLocation += "/workshop/content/2693730/3315725529/CustomMods/SummonerAssets/EidolonPortraits/";
+            string rootLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            rootLocation.Substring(0, rootLocation.Length - "/DawnsburyDaysSummonerClass.dll".Length);
+            string extraPath = "/SummonerAssets/EidolonPortraits/";
+
             // Create portrait feats
-            List<string> portraitDir = Directory.GetFiles("../CustomMods/SummonerAssets/EidolonPortraits/Beast")
-                .Concat(Directory.GetFiles("../CustomMods/SummonerAssets/EidolonPortraits/Construct"))
-                .Concat(Directory.GetFiles("../CustomMods/SummonerAssets/EidolonPortraits/Dragon"))
-                .Concat(Directory.GetFiles("../CustomMods/SummonerAssets/EidolonPortraits/Elemental"))
-                .Concat(Directory.GetFiles("../CustomMods/SummonerAssets/EidolonPortraits/Humanoid"))
-                .Concat(Directory.GetFiles("../CustomMods/SummonerAssets/EidolonPortraits/Outsider"))
-                .Concat(Directory.GetFiles("../CustomMods/SummonerAssets/EidolonPortraits/Undead"))
-                .Concat(Directory.GetFiles("../CustomMods/SummonerAssets/EidolonPortraits/ConvertedBaseGameAssets/Beast"))
-                .Concat(Directory.GetFiles("../CustomMods/SummonerAssets/EidolonPortraits/ConvertedBaseGameAssets/Construct"))
-                .Concat(Directory.GetFiles("../CustomMods/SummonerAssets/EidolonPortraits/ConvertedBaseGameAssets/Dragon"))
-                .Concat(Directory.GetFiles("../CustomMods/SummonerAssets/EidolonPortraits/ConvertedBaseGameAssets/Elemental"))
-                .Concat(Directory.GetFiles("../CustomMods/SummonerAssets/EidolonPortraits/ConvertedBaseGameAssets/Humanoid"))
-                .Concat(Directory.GetFiles("../CustomMods/SummonerAssets/EidolonPortraits/ConvertedBaseGameAssets/Outsider"))
-                .Concat(Directory.GetFiles("../CustomMods/SummonerAssets/EidolonPortraits/ConvertedBaseGameAssets/Undead"))
+            List<string> portraitDir = Directory.GetFiles(rootLocation + extraPath + "Beast")
+                .Concat(Directory.GetFiles(rootLocation + extraPath + "Construct"))
+                .Concat(Directory.GetFiles(rootLocation + extraPath + "Dragon"))
+                .Concat(Directory.GetFiles(rootLocation + extraPath + "Elemental"))
+                .Concat(Directory.GetFiles(rootLocation + extraPath + "Humanoid"))
+                .Concat(Directory.GetFiles(rootLocation + extraPath + "Outsider"))
+                .Concat(Directory.GetFiles(rootLocation + extraPath + "Undead"))
+                .Concat(Directory.GetFiles(rootLocation + extraPath + "ConvertedBaseGameAssets/Beast"))
+                .Concat(Directory.GetFiles(rootLocation + extraPath + "ConvertedBaseGameAssets/Construct"))
+                .Concat(Directory.GetFiles(rootLocation + extraPath + "ConvertedBaseGameAssets/Dragon"))
+                .Concat(Directory.GetFiles(rootLocation + extraPath + "ConvertedBaseGameAssets/Elemental"))
+                .Concat(Directory.GetFiles(rootLocation + extraPath + "ConvertedBaseGameAssets/Humanoid"))
+                .Concat(Directory.GetFiles(rootLocation + extraPath + "ConvertedBaseGameAssets/Outsider"))
+                .Concat(Directory.GetFiles(rootLocation + extraPath + "ConvertedBaseGameAssets/Undead"))
                 .ToList();
+
             List<string> nonImages = new List<String>();
             foreach (string file in portraitDir) {
                 if (!file.EndsWith(".png")) {
@@ -278,7 +290,9 @@ namespace Dawnsbury.Mods.Classes.Summoner {
             }
 
             foreach (string file in portraitDir) {
-                string clippedDir = file.Substring(14);
+                string clippedDir = file.Substring(rootLocation.Length + 1);
+                //throw new Exception(clippedDir);
+
                 portraits.Add(new ModdedIllustration(clippedDir));
             }
 
@@ -339,64 +353,64 @@ namespace Dawnsbury.Mods.Classes.Summoner {
             Feat dragonLineBreath = new Feat(ftBreathWeaponLine, "Your dragon eidolon emits a sharp, destructive line of energy.", "Your eidolon's breath weapon hits each creature in a 60-foot line.", new List<Trait>() { tBreathWeaponArea }, null);
             Feat dragonConeBreath = new Feat(ftBreathWeaponCone, "Your dragon eidolon spaws worth a torrent of destructive energy.", "Your eidolon's breath weapon hits each creature in a 30-foot cone.", new List<Trait>() { tBreathWeaponArea }, null);
 
-            // Trait.Arcane, new List<FeatName>() { FeatName.Arcana, FeatName.Intimidation }, new Func<Feat, bool>(ft => ft.HasTrait(tAlignment))
-
-            yield return new EidolonBond(ModManager.RegisterFeatName("AdamantineDragon", "Adamantite Dragon"), "Your eidolon is a gleaming adamantite dragon.", "Your eidolon's breath weapon deals mental damage vs. Will.",
+            // Primal
+            yield return new EidolonBond(ModManager.RegisterFeatName("BrineDragon", "Brine Dragon"), "Your eidolon is an orderly brine dragon from the elemental plane of water.", "Your eidolon's breath weapon deals acid damage vs. Reflex.\n\nBrine dragons are associated with the {b}Primal{/b} spellcasting tradition.",
+                Trait.Primal, new List<FeatName>() { FeatName.Nature, FeatName.Intimidation }, new Func<Feat, bool>(ft => ft.HasTrait(tAlignment) && ft.HasTrait(Trait.Lawful)),
+                new List<Trait>() { Trait.Acid, tDragonType }, new List<Feat>() { dragonConeBreath, dragonLineBreath });
+            yield return new EidolonBond(ModManager.RegisterFeatName("Cloud Dragon", "Cloud Dragon"), "Your eidolon is an adventurous cloud dragon from the elemental plane of air.", "Your eidolon's breath weapon deals electricity damage vs. Reflex.\n\nCloud dragons are associated with the {b}Primal{/b} spellcasting tradition.",
                 Trait.Primal, new List<FeatName>() { FeatName.Nature, FeatName.Intimidation }, new Func<Feat, bool>(ft => ft.HasTrait(tAlignment)),
-                new List<Trait>() { Trait.Mental, tRemaster, tDragonType }, new List<Feat>() { dragonConeBreath, dragonLineBreath });
-            yield return new EidolonBond(ModManager.RegisterFeatName("ConspiratorDragon", "Conspirator Dragon"), "Your eidolon is a cunning conspirator dragon.", "Your eidolon's breath weapon deals poison damage vs. Fortitude.",
-                Trait.Occult, new List<FeatName>() { FeatName.Occultism, FeatName.Intimidation }, new Func<Feat, bool>(ft => ft.HasTrait(tAlignment)),
-                new List<Trait>() { Trait.Poison, tRemaster, tDragonType }, new List<Feat>() { dragonConeBreath, dragonLineBreath });
-            yield return new EidolonBond(ModManager.RegisterFeatName("DiabolicDragon", "Diabolic Dragon"), "Your eidolon is a hellish diabolic dragon.", "Your eidolon's breath weapon deals fire damage vs. Reflex.",
-                Trait.Arcane, new List<FeatName>() { FeatName.Arcana, FeatName.Intimidation }, new Func<Feat, bool>(ft => ft.FeatName == ftALawfulEvil),
-                new List<Trait>() { Trait.Fire, tRemaster, tDragonType }, new List<Feat>() { dragonConeBreath, dragonLineBreath });
-            yield return new EidolonBond(ModManager.RegisterFeatName("EmpyrealDragon", "Empyreal Dragon"), "Your eidolon is a heavenly empyreal dragon.", "Your eidolon's breath weapon deals good damage vs. Reflex.",
-                Trait.Divine, new List<FeatName>() { FeatName.Religion, FeatName.Intimidation }, new Func<Feat, bool>(ft => ft.HasTrait(tAlignment) && ft.HasTrait(Trait.Good)),
-                new List<Trait>() { Trait.Good, tRemaster, tDragonType }, new List<Feat>() { dragonConeBreath, dragonLineBreath });
-            yield return new EidolonBond(ModManager.RegisterFeatName("FortuneDragon", "Fortune Dragon"), "Your eidolon is a bejewled fortune dragon.", "Your eidolon's breath weapon deals force damage vs. Reflex.",
-                Trait.Arcane, new List<FeatName>() { FeatName.Arcana, FeatName.Intimidation }, new Func<Feat, bool>(ft => ft.HasTrait(tAlignment)),
-                new List<Trait>() { Trait.Force, tRemaster, tDragonType }, new List<Feat>() { dragonConeBreath, dragonLineBreath });
-            yield return new EidolonBond(ModManager.RegisterFeatName("HornedDragon", "Horned Dragon"), "Your eidolon is a bestial horned dragon.", "Your eidolon's breath weapon deals poison damage vs. Fortitude.",
+                new List<Trait>() { Trait.Electricity, tDragonType }, new List<Feat>() { dragonConeBreath, dragonLineBreath });
+            yield return new EidolonBond(ModManager.RegisterFeatName("CrystalDragon", "Crystal Dragon"), "Your eidolon is a beautiful crystal dragon from the elemental plane of earth.", "Your eidolon's breath weapon deals piercing damage vs. Reflex.\n\nCrystal dragons are associated with the {b}Primal{/b} spellcasting tradition.",
                 Trait.Primal, new List<FeatName>() { FeatName.Nature, FeatName.Intimidation }, new Func<Feat, bool>(ft => ft.HasTrait(tAlignment)),
-                new List<Trait>() { Trait.Poison, tRemaster, tDragonType }, new List<Feat>() { dragonConeBreath, dragonLineBreath });
-            yield return new EidolonBond(ModManager.RegisterFeatName("MirageDragon", "Mirage Dragon"), "Your eidolon is an elusive mirage dragon.", "Your eidolon's breath weapon deals mental damage vs. Will.",
-                Trait.Arcane, new List<FeatName>() { FeatName.Arcana, FeatName.Intimidation }, new Func<Feat, bool>(ft => ft.HasTrait(tAlignment)),
-                new List<Trait>() { Trait.Mental, tRemaster, tDragonType }, new List<Feat>() { dragonConeBreath, dragonLineBreath });
-            yield return new EidolonBond(ModManager.RegisterFeatName("OmenDragon", "Omen Dragon"), "Your eidolon is an auspicious omen dragon.", "Your eidolon's breath weapon deals mental damage vs. Will.",
-                Trait.Occult, new List<FeatName>() { FeatName.Occultism, FeatName.Intimidation }, new Func<Feat, bool>(ft => ft.HasTrait(tAlignment)),
-                new List<Trait>() { Trait.Mental, tRemaster, tDragonType }, new List<Feat>() { dragonConeBreath, dragonLineBreath });
+                new List<Trait>() { Trait.VersatileP, tDragonType }, new List<Feat>() { dragonConeBreath, dragonLineBreath });
+            yield return new EidolonBond(ModManager.RegisterFeatName("MagmaDragon", "Magma Dragon"), "Your eidolon is a volatile magma dragon from the elemental plane of fire.", "Your eidolon's breath weapon deals fire damage vs. Reflex.\n\nMagma dragons are associated with the {b}Primal{/b} spellcasting tradition.",
+                Trait.Primal, new List<FeatName>() { FeatName.Arcana, FeatName.Intimidation }, new Func<Feat, bool>(ft => ft.HasTrait(tAlignment)),
+                new List<Trait>() { Trait.Fire, tDragonType }, new List<Feat>() { dragonConeBreath, dragonLineBreath });
+            yield return new EidolonBond(ModManager.RegisterFeatName("UmbralDragon", "Umbral Dragon"), "Your eidolon is a shadowy umbral dragon from the Shadowfell.",
+                "Your eidolon's breath weapon deals negative damage vs. Reflex.\n\nUmbral dragons are associated with the {b}Occult{/b} spellcasting tradition.\n\n{b}Special{/b} Your dragon's ghostkilling breath deals force damage to undead.",
+                Trait.Occult, new List<FeatName>() { FeatName.Occultism, FeatName.Intimidation }, new Func<Feat, bool>(ft => ft.HasTrait(tAlignment) && ft.HasTrait(Trait.Evil)),
+                new List<Trait>() { Trait.Negative, tDragonType }, new List<Feat>() { dragonConeBreath, dragonLineBreath });
 
-            yield return new EidolonBond(ModManager.RegisterFeatName("BlackDragon", "Black Dragon"), "Your eidolon is a vile black dragon.", "Your eidolon's breath weapon deals acid damage vs. Reflex.",
+            // Chromatic
+            yield return new EidolonBond(ModManager.RegisterFeatName("BlackDragon", "Black Dragon"), "Your eidolon is a vile black dragon.", "Your eidolon's breath weapon deals acid damage vs. Reflex.\n\nBlack dragons are associated with the {b}Arcane{/b} spellcasting tradition.",
                 Trait.Arcane, new List<FeatName>() { FeatName.Arcana, FeatName.Intimidation }, new Func<Feat, bool>(ft => ft.HasTrait(tAlignment) && ft.HasTrait(Trait.Evil)),
                 new List<Trait>() { Trait.Acid, tDragonType }, new List<Feat>() { dragonConeBreath, dragonLineBreath });
-            yield return new EidolonBond(ModManager.RegisterFeatName("BlueDragon", "Blue Dragon"), "Your eidolon is a sophisticated blue dragon.", "Your eidolon's breath weapon deals electricity damage vs. Reflex.",
+            yield return new EidolonBond(ModManager.RegisterFeatName("BlueDragon", "Blue Dragon"), "Your eidolon is a sophisticated blue dragon.", "Your eidolon's breath weapon deals electricity damage vs. Reflex.\n\nBlue dragons are associated with the {b}Arcane{/b} spellcasting tradition.",
                 Trait.Arcane, new List<FeatName>() { FeatName.Arcana, FeatName.Intimidation }, new Func<Feat, bool>(ft => ft.HasTrait(tAlignment) && ft.HasTrait(Trait.Evil)),
                 new List<Trait>() { Trait.Electricity, tDragonType }, new List<Feat>() { dragonConeBreath, dragonLineBreath });
-            yield return new EidolonBond(ModManager.RegisterFeatName("GreenDragon", "Green Dragon"), "Your eidolon is a cunning green dragon.", "Your eidolon's breath weapon deals poison damage vs. Fortitude.",
+            yield return new EidolonBond(ModManager.RegisterFeatName("GreenDragon", "Green Dragon"), "Your eidolon is a cunning green dragon.", "Your eidolon's breath weapon deals poison damage vs. Fortitude.\n\nGreen dragons are associated with the {b}Arcane{/b} spellcasting tradition.",
                 Trait.Arcane, new List<FeatName>() { FeatName.Arcana, FeatName.Intimidation }, new Func<Feat, bool>(ft => ft.HasTrait(tAlignment) && ft.HasTrait(Trait.Evil)),
                 new List<Trait>() { Trait.Poison, tDragonType }, new List<Feat>() { dragonConeBreath, dragonLineBreath });
-            yield return new EidolonBond(ModManager.RegisterFeatName("RedDragon", "Red Dragon"), "Your eidolon is a tyranical red dragon.", "Your eidolon's breath weapon deals fire damage vs. Reflex.",
+            yield return new EidolonBond(ModManager.RegisterFeatName("RedDragon", "Red Dragon"), "Your eidolon is a tyranical red dragon.", "Your eidolon's breath weapon deals fire damage vs. Reflex.\n\nRed dragons are associated with the {b}Arcane{/b} spellcasting tradition.",
                 Trait.Arcane, new List<FeatName>() { FeatName.Arcana, FeatName.Intimidation }, new Func<Feat, bool>(ft => ft.HasTrait(tAlignment) && ft.HasTrait(Trait.Evil)),
                 new List<Trait>() { Trait.Fire, tDragonType }, new List<Feat>() { dragonConeBreath, dragonLineBreath });
-            yield return new EidolonBond(ModManager.RegisterFeatName("WhiteDragon", "White Dragon"), "Your eidolon is a feral white dragon.", "Your eidolon's breath weapon deals cold damage vs. Reflex.",
+            yield return new EidolonBond(ModManager.RegisterFeatName("WhiteDragon", "White Dragon"), "Your eidolon is a feral white dragon.", "Your eidolon's breath weapon deals cold damage vs. Reflex.\n\nWhite dragons are associated with the {b}Arcane{/b} spellcasting tradition.",
                 Trait.Arcane, new List<FeatName>() { FeatName.Arcana, FeatName.Intimidation }, new Func<Feat, bool>(ft => ft.HasTrait(tAlignment) && ft.HasTrait(Trait.Evil)),
                 new List<Trait>() { Trait.Cold, tDragonType }, new List<Feat>() { dragonConeBreath, dragonLineBreath });
 
-            yield return new EidolonBond(ModManager.RegisterFeatName("CopperDragon", "Copper Dragon"), "Your eidolon is a wily copper dragon.", "Your eidolon's breath weapon deals acid damage vs. Reflex.",
+            // Metallic
+            yield return new EidolonBond(ModManager.RegisterFeatName("CopperDragon", "Copper Dragon"), "Your eidolon is a wily copper dragon.", "Your eidolon's breath weapon deals acid damage vs. Reflex.\n\nCopper dragons are associated with the {b}Arcane{/b} spellcasting tradition.",
                 Trait.Arcane, new List<FeatName>() { FeatName.Arcana, FeatName.Intimidation }, new Func<Feat, bool>(ft => ft.FeatName == ftAChaoticGood),
                 new List<Trait>() { Trait.Acid, tDragonType }, new List<Feat>() { dragonConeBreath, dragonLineBreath });
-            yield return new EidolonBond(ModManager.RegisterFeatName("BronzeDragon", "Bronze Dragon"), "Your eidolon is a scholarly bronze dragon.", "Your eidolon's breath weapon deals electricity damage vs. Reflex.",
+            yield return new EidolonBond(ModManager.RegisterFeatName("BronzeDragon", "Bronze Dragon"), "Your eidolon is a scholarly bronze dragon.", "Your eidolon's breath weapon deals electricity damage vs. Reflex.\n\nBronze dragons are associated with the {b}Arcane{/b} spellcasting tradition.",
                 Trait.Arcane, new List<FeatName>() { FeatName.Arcana, FeatName.Intimidation }, new Func<Feat, bool>(ft => ft.HasTrait(tAlignment) && ft.HasTrait(Trait.Good)),
                 new List<Trait>() { Trait.Electricity, tDragonType }, new List<Feat>() { dragonConeBreath, dragonLineBreath });
-            yield return new EidolonBond(ModManager.RegisterFeatName("BrassDragon", "Brass Dragon"), "Your eidolon is a whimsical brass dragon.", "Your eidolon's breath weapon deals fire damage vs. Reflex.",
+            yield return new EidolonBond(ModManager.RegisterFeatName("BrassDragon", "Brass Dragon"), "Your eidolon is a whimsical brass dragon.", "Your eidolon's breath weapon deals fire damage vs. Reflex.\n\nBrass dragons are associated with the {b}Arcane{/b} spellcasting tradition.",
                 Trait.Arcane, new List<FeatName>() { FeatName.Arcana, FeatName.Intimidation }, new Func<Feat, bool>(ft => ft.HasTrait(tAlignment) && ft.HasTrait(Trait.Good)),
                 new List<Trait>() { Trait.Fire, tDragonType }, new List<Feat>() { dragonConeBreath, dragonLineBreath });
-            yield return new EidolonBond(ModManager.RegisterFeatName("GoldDragon", "Gold Dragon"), "Your eidolon is an honourable gold dragon.", "Your eidolon's breath weapon deals fire damage vs. Reflex.",
-                Trait.Arcane, new List<FeatName>() { FeatName.Arcana, FeatName.Intimidation }, new Func<Feat, bool>(ft => ft.FeatName == ftALawfulGood),
+            yield return new EidolonBond(ModManager.RegisterFeatName("GoldDragon", "Gold Dragon"), "Your eidolon is an honourable gold dragon.", "Your eidolon's breath weapon deals fire damage vs. Reflex.\n\nGold dragons are associated with the {b}Divine{/b} spellcasting tradition.",
+                Trait.Divine, new List<FeatName>() { FeatName.Arcana, FeatName.Intimidation }, new Func<Feat, bool>(ft => ft.FeatName == ftALawfulGood),
                 new List<Trait>() { Trait.Fire, tDragonType }, new List<Feat>() { dragonConeBreath, dragonLineBreath });
-            yield return new EidolonBond(ModManager.RegisterFeatName("SilverDragon", "Silver Dragon"), "Your eidolon is a silver white dragon.", "Your eidolon's breath weapon deals cold damage vs. Reflex.",
-                Trait.Arcane, new List<FeatName>() { FeatName.Arcana, FeatName.Intimidation }, new Func<Feat, bool>(ft => ft.HasTrait(tAlignment) && ft.HasTrait(Trait.Good)),
+            yield return new EidolonBond(ModManager.RegisterFeatName("SilverDragon", "Silver Dragon"), "Your eidolon is a silver white dragon.", "Your eidolon's breath weapon deals cold damage vs. Reflex.\n\nSilver dragons are associated with the {b}Arcane{/b} spellcasting tradition.",
+                Trait.Arcane, new List<FeatName>() { FeatName.Religion, FeatName.Intimidation }, new Func<Feat, bool>(ft => ft.HasTrait(tAlignment) && ft.HasTrait(Trait.Good)),
                 new List<Trait>() { Trait.Cold, tDragonType }, new List<Feat>() { dragonConeBreath, dragonLineBreath });
+
+            // Imperial
+            // TODO: Playtest new dragon types. Check if piercing and negative damage are properly handled.
+            // TODO: Add imperial dragons
+            // TODO: Add spell tradition to other dragons.
+            // TODO: Enable old dragon traditions
+            // Put damage type and tradition in bold.
 
             // Init class
             yield return new ClassSelectionFeat(classSummoner, SummonerFlavour, tSummoner,
@@ -560,7 +574,7 @@ namespace Dawnsbury.Mods.Classes.Summoner {
             DamageKind[] damageTypes = new DamageKind[] { DamageKind.Acid, DamageKind.Cold, DamageKind.Electricity, DamageKind.Fire, DamageKind.Sonic, DamageKind.Positive, DamageKind.Negative };
 
             foreach (DamageKind energy in damageTypes) {
-                yield return new Feat(ModManager.RegisterFeatName("EnergyHeart" + energy.HumanizeTitleCase2(), "Energy Heart: " + energy.HumanizeTitleCase2()), "", $"Your eidolon's chosen natural weapon deals {energy.HumanizeTitleCase2} damage, and it gains {energy.HumanizeTitleCase2} resistance equal to half your level (minimum 1)", new List<Trait>() { DamageToTrait(energy), tEnergyHeartDamage }, null);
+                yield return new Feat(ModManager.RegisterFeatName("EnergyHeart" + energy.HumanizeTitleCase2(), "Energy Heart: " + energy.HumanizeTitleCase2()), "", $"Your eidolon's chosen natural weapon deals {energy.HumanizeTitleCase2()} damage, and it gains {energy.HumanizeTitleCase2()} resistance equal to half your level (minimum 1)", new List<Trait>() { DamageToTrait(energy), tEnergyHeartDamage }, null);
             }
 
             // TODO: Fix up to work with invested weapons. Will need to overhaul system.
@@ -722,7 +736,7 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                 new List<Trait> { tSecondaryAttackType, Trait.Strike }, null).WithIllustration(IllustrationName.Tail);
 
             // Init Primary Weapon Properties
-            yield return new Feat(ftPSPowerful, "Your eidolon possesses great strength, allowing it to easily bully and subdue its enemies.", "Your eidolon's primary deals 1d8 damage and has the disarm, nonlethal, shove and trip traits. Athletics checks made using a weapon with a maneovre trait benefit from the item bonus on your handwraps of mighty blows." +
+            yield return new Feat(ftPSPowerful, "Your eidolon possesses great strength, allowing it to easily bully and subdue its enemies.", "Your eidolon's primary deals 1d8 damage and has the disarm, nonlethal, shove and trip traits.\n\nAthletics checks made using a weapon with a maneouvre trait benefit your eidolon's item bonus." +
                 "\n\n{b}" + Trait.Disarm.GetTraitProperties().HumanizedName + "{/b} " + Trait.Disarm.GetTraitProperties().RulesText +
                 "\n{b}" + Trait.Shove.GetTraitProperties().HumanizedName + "{/b} " + Trait.Shove.GetTraitProperties().RulesText +
                 "\n{b}" + Trait.Trip.GetTraitProperties().HumanizedName + "{/b} " + Trait.Trip.GetTraitProperties().RulesText,
@@ -1302,7 +1316,7 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                     target = Target.Cone(6);
                 }
                 DamageKind damageKind = DamageKind.Fire;
-                Defense save;
+                Defense save = Defense.Reflex;
                 string damageName = "ERROR";
                 if (damageTrait == Trait.Fire) {
                     damageKind = DamageKind.Fire;
@@ -1336,6 +1350,14 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                     damageKind = DamageKind.Piercing;
                     save = Defense.Reflex;
                     damageName = "piercing";
+                } else if (damageTrait == Trait.Positive) {
+                    damageKind = DamageKind.Positive;
+                    save = Defense.Reflex;
+                    damageName = "positive";
+                } else if (damageTrait == Trait.Negative) {
+                    damageKind = DamageKind.Negative;
+                    save = Defense.Reflex;
+                    damageName = "negative";
                 }
 
                 Trait[] traits = new Trait[] { };
@@ -1347,12 +1369,21 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                     ProvideMainAction = (Func<QEffect, Possibility>)(qfEidolon => {
                         Creature summoner = GetSummoner(qfEidolon.Owner);
                         int dice = 1 + (summoner.Level + 1) / 2;
-                        return (Possibility)(ActionPossibility)new CombatAction(qfEidolon.Owner, IllustrationName.BreathWeapon, "Breath Weapon", traits, "Your eidolon exhales a breath of destructive energy. Deal " + dice + "d6 " + damageName + " damage to each creature in the area.\n\n{b}Special.{/b}You can't use breath weapon again for 1d4 rounds.\n\nAt 3rd level, and every 2 levels thereafter, damage increases by 1d6.", target) {
+                        CombatAction breathWeapon = new CombatAction(qfEidolon.Owner, IllustrationName.BreathWeapon, "Breath Weapon", traits, "{b}Range{/b} " + 
+                            (targetFeat == ftBreathWeaponCone ? "30-foot cone" : "60-foot line") + "\n{b}Saving Throw{/b} " + 
+                            (save == Defense.Reflex ? "Reflex" : save == Defense.Fortitude ? "Fortitude" : "Will") + 
+                            "\n\nYour eidolon exhales a breath of destructive energy. Deal " + dice + "d6 " + damageName + 
+                            " damage to each creature in the area.\n\n{b}Special.{/b}Your eidolon can't use breath weapon again for 1d4 rounds.\n\nAt 3rd level, and every 2 levels thereafter, damage increases by 1d6." + 
+                            (damageKind == DamageKind.Negative ? "\n\nTheir ghost killing breath weapon deals force damage to undead creatures." : ""), target) {
                             ShortDescription = "Your eidolon exhales a breath of destructive energy. Deal " + dice + "d6 " + damageName + " damage to each creature in the area."
                         }
-                        .WithSavingThrow(new SavingThrow(Defense.Reflex, (_ => saveDC)))
+                        .WithSavingThrow(new SavingThrow(save, (_ => saveDC)))
                         .WithEffectOnEachTarget(async (action, self, target, checkResult) => {
-                            await CommonSpellEffects.DealBasicDamage(action, self, target, checkResult, $"{dice}d6", damageKind);
+                            if (target.HasTrait(Trait.Undead) && damageKind == DamageKind.Negative) {
+                                await CommonSpellEffects.DealBasicDamage(action, self, target, checkResult, $"{dice}d6", DamageKind.Force);
+                            } else {
+                                await CommonSpellEffects.DealBasicDamage(action, self, target, checkResult, $"{dice}d6", damageKind);
+                            }
                         })
                         .WithEffectOnChosenTargets(async (self, defenders) => {
                             int num = R.Next(1, 4);
@@ -1363,7 +1394,16 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                                 Value = num
                             });
                         })
-                        .WithSoundEffect(SfxName.Fireball);
+                        .WithSoundEffect(SfxName.Fireball)
+                        .WithActionCost(2);
+
+                        if (targetFeat == ftBreathWeaponLine) {
+                            breathWeapon.WithProjectileCone(IllustrationName.BreathWeapon, 30, ProjectileKind.Cone);
+                        } else {
+                            breathWeapon.WithProjectileCone(IllustrationName.BreathWeapon, 20, ProjectileKind.Ray);
+                        }
+
+                        return (Possibility)(ActionPossibility) breathWeapon;
                     }),
                 });
             } else if (featName == scBeastEidolonBrutal || featName == scBeastEidolonFleet) {
