@@ -1033,7 +1033,13 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                 EndOfYourTurn = (Func<QEffect, Creature, Task>)(async (qfEndOfTurn, summoner) => {
                     Creature eidolon = GetEidolon(summoner);
                     eidolon.Actions.ForgetAllTurnCounters();
+                    summoner.Battle.ActiveCreature = eidolon;
+                    List<QEffect> sustainEffects = summoner.QEffects.Where(qf => qf.CannotExpireThisTurn == true).ToList();
                     await eidolon.Battle.GameLoop.EndOfTurn(eidolon);
+                    foreach (QEffect effect in sustainEffects) {
+                        effect.CannotExpireThisTurn = true;
+                    }
+                    summoner.Battle.ActiveCreature = summoner;
                 }),
                 EndOfCombat = (Func<QEffect, bool, Task>)(async (qfCleanup, won) => {
                     summoner.PersistentUsedUpResources.UsedUpActions.Remove("Act Together");
