@@ -1015,6 +1015,11 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                         HPShareEffect shareHP = (HPShareEffect)qf.Owner.QEffects.FirstOrDefault<QEffect>((Func<QEffect, bool>)(qf => qf.Id == qfSummonerBond));
                         await HandleHealthShare(qf.Owner, eidolon, shareHP.LoggedAction, SummonerClassEnums.InterceptKind.TARGET);
                     }
+                    if (eidolon.HasEffect(qfReactiveStrikeCheck)) {
+                        eidolon.RemoveAllQEffects(qf => qf.Id == qfReactiveStrikeCheck);
+                        HPShareEffect shareHP = (HPShareEffect)eidolon.QEffects.FirstOrDefault<QEffect>((Func<QEffect, bool>)(qf => qf.Id == qfSummonerBond));
+                        await HandleHealthShare(eidolon, qf.Owner, shareHP.LoggedAction, SummonerClassEnums.InterceptKind.TARGET);
+                    }
 
                     // Handle tempHP
                     if (qf.Owner.TemporaryHP < eidolon.TemporaryHP) {
@@ -1561,6 +1566,11 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                             qf.Owner.RemoveAllQEffects(qf => qf.Id == qfReactiveStrikeCheck);
                             HPShareEffect shareHP = (HPShareEffect)qf.Owner.QEffects.FirstOrDefault<QEffect>((Func<QEffect, bool>)(qf => qf.Id == qfSummonerBond));
                             await HandleHealthShare(qf.Owner, summoner, shareHP.LoggedAction, SummonerClassEnums.InterceptKind.TARGET);
+                        }
+                        if (summoner.HasEffect(qfReactiveStrikeCheck)) {
+                            summoner.RemoveAllQEffects(qf => qf.Id == qfReactiveStrikeCheck);
+                            HPShareEffect shareHP = (HPShareEffect)summoner.QEffects.FirstOrDefault<QEffect>((Func<QEffect, bool>)(qf => qf.Id == qfSummonerBond));
+                            await HandleHealthShare(summoner, qf.Owner, shareHP.LoggedAction, SummonerClassEnums.InterceptKind.TARGET);
                         }
 
                         // Handle tempHP
