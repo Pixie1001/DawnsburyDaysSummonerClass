@@ -57,8 +57,7 @@ namespace Dawnsbury.Mods.Classes.Summoner {
             EidolonBoost,
             ReinforceEidolon,
             ExtendBoost,
-            LifelinkSurge,
-            EidolonsWrath
+            LifelinkSurge
         }
 
         public static Dictionary<SummonerSpellId, SpellId> LoadSpells() {
@@ -108,21 +107,37 @@ namespace Dawnsbury.Mods.Classes.Summoner {
             spellList.Add(SummonerSpellId.EidolonBoost, ModManager.RegisterNewSpell("EidolonBoost", 1, (spellId, spellcaster, spellLevel, inCombat, spellInformation) => {
                 return Spells.CreateModern(illEidolonBoost, "Eidolon Boost", new[] { tSummoner, Trait.Cantrip, Trait.Evocation, Trait.Uncommon },
                         "You focus deeply on the link between you and your eidolon and boost the power of its attacks.",
-                        "Your eidolon gains a +2 status bonus to damage rolls with its strikes.\n\n{b}Special.{/b} If your eidolon's Strikes deal more than one weapon damage die, the status bonus increases to 2 per weapon damage die, to a maximum of +8 with four weapon damage dice.",
+                        "Your eidolon gains a +2 status bonus to damage rolls with its unarmed attacks.\n\n{b}Special.{/b} If your eidolon's Strikes deal more than one weapon damage die, the status bonus increases to 2 per weapon damage die, to a maximum of +8 with four weapon damage dice.",
                         Target.RangedFriend(20).WithAdditionalConditionOnTargetCreature((CreatureTargetingRequirement)new EidolonCreatureTargetingRequirement(qfSummonerBond)), spellLevel, null)
                     .WithSoundEffect(SfxName.Abjuration)
                     .WithEffectOnEachTarget((Delegates.EffectOnEachTarget)(async (spell, caster, target, result) => {
-                        target.RemoveAllQEffects(qf => qf.Name == "Reinforce Eidolon");
-                        QEffect buff = new QEffect("Eidolon Boost", "+2 status bonus to damage per damage die to strikes.") {
+                        target.RemoveAllQEffects(qfActTogether => qfActTogether.Name == "Reinforce Eidolon");
+                        QEffect buff = new QEffect("Eidolon Boost", "+2 status bonus to damage per damage die on unarmed attacks.") {
                             Key = "Eidolon Boost",
                             Source = caster,
                             CountsAsABuff = true,
                             Illustration = illEidolonBoost,
                             BonusToDamage = (qf, action, target) => {
-                                if (!action.Name.StartsWith("Strike (")) {
+                                if (!action.HasTrait(Trait.Unarmed)) {
                                     return null;
                                 }
                                 int dice = action.TrueDamageFormula.ToString()[0] - '0';
+
+                                int bestDice = 0;
+
+                                Item? mainHand = GetSummoner(qf.Owner).PrimaryItem;
+                                Item? offHand = GetSummoner(qf.Owner).SecondaryItem;
+
+                                if (mainHand != null && mainHand.WeaponProperties != null) {
+                                    bestDice = mainHand.WeaponProperties.DamageDieCount;
+                                }
+                                if (offHand != null && offHand.WeaponProperties != null) {
+                                    bestDice = offHand.WeaponProperties.DamageDieCount > bestDice ? offHand.WeaponProperties.DamageDieCount : bestDice;
+                                }
+
+                                if (bestDice >= dice) {
+                                    dice = bestDice;
+                                }
 
                                 return new Bonus(dice * 2, BonusType.Status, "Eidolon Boost");
                             },
@@ -135,29 +150,6 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                             extender.ExpiresAt = ExpirationCondition.Immediately;
                         }
                         target.AddQEffect(buff);
-                        if (caster.HasFeat(ftBoostSummons)) {
-                            List<Creature> summons = caster.Battle.AllCreatures.Where(c => target.DistanceTo(c) <= 12 && c.QEffects.FirstOrDefault(qf => qf.Id == QEffectId.SummonedBy && qf.Source == caster) != null).ToList();
-                            foreach (Creature creature in summons) {
-                                creature.RemoveAllQEffects(qf => qf.Name == "Reinforce Eidolon");
-                                QEffect buffCopy = new QEffect("Eidolon Boost", "+2 status bonus to damage per damage die to strikes.") {
-                                    Key = "Eidolon Boost",
-                                    Source = caster,
-                                    CountsAsABuff = true,
-                                    Illustration = illEidolonBoost,
-                                    BonusToDamage = (qf, action, target) => {
-                                        if (!action.Name.StartsWith("Strike (")) {
-                                            return null;
-                                        }
-                                        int dice = action.TrueDamageFormula.ToString()[0] - '0';
-
-                                        return new Bonus(dice * 2, BonusType.Status, "Eidolon Boost");
-                                    },
-                                    ExpiresAt = buff.ExpiresAt,
-                                    Value = buff.Value
-                                };
-                                creature.AddQEffect(buffCopy);
-                            }
-                        }
                     })).WithActionCost(1);
             }));
 
@@ -191,29 +183,6 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                             extender.ExpiresAt = ExpirationCondition.Immediately;
                         }
                         target.AddQEffect(buff);
-                        if (caster.HasFeat(ftBoostSummons)) {
-                            List<Creature> summons = caster.Battle.AllCreatures.Where(c => target.DistanceTo(c) <= 12 && c.QEffects.FirstOrDefault(qf => qf.Id == QEffectId.SummonedBy && qf.Source == caster) != null).ToList();
-                            foreach (Creature creature in summons) {
-                                creature.RemoveAllQEffects(qf => qf.Name == "Boost Eidolon");
-                                QEffect buffCopy = new QEffect("Reinforce Eidolon", "+1 status bonus to AC and all saves." + (spellLevel > 1 ? " Plus resist " + spellLevel / 2 + " to all damage." : "")) {
-                                    Key = "Reinforce Eidolon",
-                                    Source = caster,
-                                    CountsAsABuff = true,
-                                    Illustration = illReinforceEidolon,
-                                    BonusToDefenses = (qf, action, target) => {
-                                        return new Bonus(1, BonusType.Status, "Reinforce Eidolon");
-                                    },
-                                    StateCheck = (qfResistance =>
-                                        qfResistance.Owner.WeaknessAndResistance.Hardness = 1),
-                                    WhenExpires = qf => {
-                                        qf.Owner.WeaknessAndResistance.Hardness = 0;
-                                    },
-                                    ExpiresAt = buff.ExpiresAt,
-                                    Value = buff.Value
-                                };
-                                creature.AddQEffect(buffCopy);
-                            }
-                        }
                     })).WithActionCost(1);
             }));
 
@@ -239,7 +208,7 @@ namespace Dawnsbury.Mods.Classes.Summoner {
             spellList.Add(SummonerSpellId.ExtendBoost, ModManager.RegisterNewSpell("ExtendBoostSpell", 1, (spellId, spellcaster, spellLevel, inCombat, spellInformation) => {
                 return Spells.CreateModern(illExtendBoost, "Extend Boost", new[] { tSummoner, Trait.Focus, Trait.Metamagic, Trait.Divination, Trait.Uncommon },
                         "You focus on the intricacies of the magic binding you to your eidolon to extend the duration of your boost eidolon or reinforce eidolon spell.",
-                        "If your next action is to cast boost eidolon or reinforce eidolon, attempt a skill check with the skill associated with the tradition of magic you gain from your eidolon (such as Nature for a primal eidolon) vs. a standard-difficulty DC of your level. The effect depends on the result of your check.\n\n{b}Critical Success{/b} The spell lasts 4 rounds.\n{b}Success{/b} The spell lasts 3 rounds.\n{b}Failure{/b} The spell lasts 1 round, but you don't spend the Focus Point for casting this spell.",
+                        "If your next action is to cast boost eidolon or reinforce eidolon, attempt a skill check with the skill associated with the tradition of magic you gain from your eidolon (such as Nature for a primal eidolon) vs. a standard-difficulty DC of your level. The effect depends on the result of your check.\r\n\r\n{b}Critical Success{/b} The spell lasts 4 rounds.\r\n{b}Success{/b} The spell lasts 3 rounds.\r\n{b}Failure{/b} The spell lasts 1 round, but you don't spend the Focus Point for casting this spell.\r\n",
                         Target.Self(), spellLevel, null)
                     .WithSoundEffect(SfxName.MinorAbjuration)
                     .WithEffectOnEachTarget((Delegates.EffectOnEachTarget)(async (spell, caster, target, result) => {
@@ -251,7 +220,6 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                                     int duration = 0;
                                     if (result == CheckResult.Failure) {
                                         spellcaster.Spellcasting.FocusPoints += 1;
-                                        GetEidolon(spellcaster).Spellcasting.FocusPoints += 1;
                                         spellcaster.Occupies.Overhead("Focus point refunded", Color.Green);
                                     } else if (result == CheckResult.Success) {
                                         duration = 3;
@@ -267,7 +235,6 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                                     }
                                 } else {
                                     spellcaster.Spellcasting.FocusPoints += 1;
-                                    GetEidolon(spellcaster).Spellcasting.FocusPoints += 1;
                                     spellcaster.Occupies.Overhead("Focus point refunded", Color.Green);
                                 }
                                 qf.ExpiresAt = ExpirationCondition.Immediately;
@@ -277,25 +244,6 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                     })).WithActionCost(0);
             }));
 
-            spellList.Add(SummonerSpellId.EidolonsWrath, ModManager.RegisterNewSpell("EidolonsWrath", 3, (spellId, spellcaster, spellLevel, inCombat, spellInformation) => {
-                return Spells.CreateModern(IllustrationName.DivineWrath, "Eidolon's Wrath", new[] { tSummoner, Trait.Focus, Trait.Evocation, Trait.Uncommon },
-                        "",
-                        "Your eidolon releases a powerful energy attack that deals 5d6 " +
-                        (spellcaster != null && spellcaster.HasEffect(qfEidolonsWrath) ? HumanizeDamageKind((DamageKind)spellcaster.FindQEffect(qfEidolonsWrath).Tag) + " damage" : "damage of the type chosen when you took the Eidolon's Wrath feat") + ".",
-                        new EmanationTarget(4, false), spellLevel, SpellSavingThrow.Basic(Defense.Reflex))
-                .WithNoSaveFor((a, c) => c.Destroyed ? true : true )
-                //.WithSavingThrow(new SavingThrow(Defense.Reflex, caster => spellcaster != null && spellcaster.HasEffect(qfEidolonsWrath) ? GetSummoner(caster).ClassOrSpellDC() : 0))    
-                .WithSoundEffect(SfxName.Fireball)
-                    .WithEffectOnEachTarget((Delegates.EffectOnEachTarget)(async (spell, caster, target, _) => {
-                        if (caster == null || spellcaster.HasEffect(qfEidolonsWrath) == false) {
-                            return;
-                        }
-                        CheckResult result = CommonSpellEffects.RollSavingThrow(target, spell, Defense.Fortitude, GetSummoner(caster).ClassOrSpellDC());
-                        DamageKind dk = (DamageKind)caster.FindQEffect(qfEidolonsWrath).Tag;
-                        await CommonSpellEffects.DealBasicDamage(spell, caster, target, result, DiceFormula.FromText($"{2 * spellLevel - 1}d6"), dk);
-                    }))
-                    .WithActionCost(2);
-            }));
 
             // Add new spells HERE
 
@@ -320,10 +268,6 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                 default:
                     return Skill.Society;
             }
-        }
-
-        private static string HumanizeDamageKind(DamageKind damageKind) {
-            return damageKind.HumanizeTitleCase2();
         }
 
         private static int GetDCByLevel(int level) {
