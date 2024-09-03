@@ -730,7 +730,7 @@ namespace Dawnsbury.Mods.Classes.Summoner {
             .WithRulesBlockForSpell(spells[SummonerSpellId.EidolonsWrath], tSummoner);
 
             // Generate spell selection feats
-            List<Spell> allSpells = AllSpells.All.Where(sp => sp.HasTrait(Trait.Cantrip) || sp.SpellLevel <= 2).ToList();
+            List<Spell> allSpells = AllSpells.All.Where(sp => (sp.HasTrait(Trait.Cantrip) || sp.SpellLevel <= 2) && !sp.HasTrait(Trait.Focus) && !sp.HasTrait(Trait.Uncommon)).ToList();
             foreach (Spell spell in allSpells) {
                 List<Trait> traits = new List<Trait>() { tEidolonSpellFeat };
                 if (spell.HasTrait(Trait.Cantrip) == false) {
