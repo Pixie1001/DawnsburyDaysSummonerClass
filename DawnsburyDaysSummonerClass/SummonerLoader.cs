@@ -65,6 +65,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Diagnostics.Metrics;
 //using System.Drawing;
 using Microsoft.Xna.Framework.Audio;
+using Dawnsbury.Core.CharacterBuilder.FeatsDb;
 
 namespace Dawnsbury.Mods.Classes.Summoner {
 
@@ -82,27 +83,28 @@ namespace Dawnsbury.Mods.Classes.Summoner {
     }
 
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
-    public class SelectMultipleSignatureSpells : AddToSpellRepertoireOption {
-        public override int MaximumNumberOfSpells { get; }
-        public Trait Tradition { get; }
+    public class SelectFeySpells : AddToSpellRepertoireOption {
 
-        public SelectMultipleSignatureSpells(string key, string name, int level, Trait classRepertoire, Trait tradition, int maxSpellLevel, int maximumNumberOfSpells) : base (key, name, level, classRepertoire, tradition, maxSpellLevel, maximumNumberOfSpells) {
-            this.MaximumNumberOfSpells = maximumNumberOfSpells;
-            this.Tradition = tradition;
+        private bool allowCantrips;
+
+        public SelectFeySpells(string key, string name, int level, Trait classRepertoire, int maxSpellLevel, int maximumNumberOfSpells, bool allowCantrips = false) : base (key, name, level, classRepertoire, Trait.Primal, maxSpellLevel, maximumNumberOfSpells) {
+            this.allowCantrips = allowCantrips;
         }
 
-        // What spells are shown as optiona
+        // What spells are shown as optional
         public override bool Eligible(CalculatedCharacterSheetValues values, Spell spell) {
-            if (!spell.HasTrait(this.Tradition) || spell.HasTrait(Trait.SpellCannotBeChosenInCharacterBuilder) || spell.HasTrait(Trait.Cantrip))
+            Trait[] allowedTraits = new Trait[] { Trait.Illusion, Trait.Enchantment, Trait.Mental };
+            List<Trait> traits = spell.Traits.ToList().Where(t => allowedTraits.Contains(t)).ToList();
+
+            if ((!spell.HasTrait(Trait.Primal) && !(traits.Count > 0 && spell.HasTrait(Trait.Arcane))) || spell.HasTrait(Trait.SpellCannotBeChosenInCharacterBuilder) || (spell.HasTrait(Trait.Cantrip) && !allowCantrips))
                 return false;
+            if (allowCantrips && spell.HasTrait(Trait.Cantrip)) {
+                return true;
+            } else if (allowCantrips && !spell.HasTrait(Trait.Cantrip)) {
+                return false;
+            }
             return this.MaximumSpellLevel >= 1 && spell.MinimumSpellLevel <= this.MaximumSpellLevel && !spell.HasTrait(Trait.Cantrip);
         }
-
-        // Determines what options are greyed out?
-        public override bool IsTaken(CalculatedCharacterSheetValues values, Spell spell) {
-            return values.SpellRepertoires[this.SpellRepertoire].SpellsKnown.Any<Spell>((Func<Spell, bool>)(sp => sp.SpellId == spell.SpellId));
-        }
-
     }
 
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
@@ -151,7 +153,7 @@ namespace Dawnsbury.Mods.Classes.Summoner {
         private static FeatName scBeastEidolonBrutal = ModManager.RegisterFeatName("Brutal Beast");
         private static FeatName scBeastEidolonFleet = ModManager.RegisterFeatName("Fleet Beast");
 
-        private static FeatName scDevoPhantomEidolon = ModManager.RegisterFeatName("Devotion Phantom");
+        private static FeatName scDevoPhantomEidolon = ModManager.RegisterFeatName("Devotion Phantom Eidolon");
         private static FeatName scDevoPhantomEidolonStalwart = ModManager.RegisterFeatName("Stalward Guardian");
         private static FeatName scDevoPhantomEidolonSwift = ModManager.RegisterFeatName("Swift Protector");
 
@@ -159,10 +161,24 @@ namespace Dawnsbury.Mods.Classes.Summoner {
         private static FeatName scAzataEidolonCrusader = ModManager.RegisterFeatName("Crusader Azata");
         private static FeatName scAzataEidolonPoet = ModManager.RegisterFeatName("Poet Azata");
 
+        private static FeatName scFeyEidolon = ModManager.RegisterFeatName("Fey Eidolon");
+        private static FeatName scFeyEidolonSkirmisher = ModManager.RegisterFeatName("Skirmisher Fey");
+        private static FeatName scFeyEidolonTrickster = ModManager.RegisterFeatName("Trickster Fey");
+
+        private static FeatName scDevilEidolon = ModManager.RegisterFeatName("Devil Eidolon");
+        private static FeatName scDevilEidolonLegionnaire = ModManager.RegisterFeatName("Inferal Legionnaire");
+        private static FeatName scDevilEidolonBarrister = ModManager.RegisterFeatName("Infernal Barrister");
+
+        private static FeatName scAngerPhantom = ModManager.RegisterFeatName("Anger Phantom Eidolon");
+        private static FeatName scAngerPhantomBerserker = ModManager.RegisterFeatName("Wrathful Berserker");
+        private static FeatName scAngerPhantomAssassin = ModManager.RegisterFeatName("Enraged Assassin");
+
         // Class Feat names
         private static FeatName ftAbundantSpellcasting1 = ModManager.RegisterFeatName("AbundantSpellCastingSummoner1", "Abundant Spellcasting");
         private static FeatName ftAbundantSpellcasting4 = ModManager.RegisterFeatName("AbundantSpellCastingSummoner4", "Abundant Spellcasting 2");
         public static FeatName ftBoostSummons = ModManager.RegisterFeatName("SummonerClassFeatBoostSummons", "Boost Summons");
+        public static FeatName ftMagicalUnderstudy = ModManager.RegisterFeatName("SummonerMagicalUnderstudy", "Magical Understudy");
+        public static FeatName ftMagicalAdept = ModManager.RegisterFeatName("SummonerMagicalAdept", "Magical Adept");
 
         // Primary Weapon Feat Names
         private static FeatName ftPSword = ModManager.RegisterFeatName("P_Sword", "Sword");
@@ -217,6 +233,7 @@ namespace Dawnsbury.Mods.Classes.Summoner {
         internal static QEffectId qfEidolonsWrath = ModManager.RegisterEnumMember<QEffectId>("Eidolon's Wrath QF");
         internal static QEffectId qfOstentatiousArrival = ModManager.RegisterEnumMember<QEffectId>("Ostentatious Arrival Toggled");
         internal static QEffectId qfWhimsicalAura = ModManager.RegisterEnumMember<QEffectId>("Whimsical Aura");
+        internal static QEffectId qfSeethingFrenzy = ModManager.RegisterEnumMember<QEffectId>("Seething Frenzy");
 
         // Actions
         internal static ActionId acCelestialPassion = ModManager.RegisterEnumMember<ActionId>("CelestialPassion");
@@ -239,6 +256,11 @@ namespace Dawnsbury.Mods.Classes.Summoner {
         internal static ModdedIllustration illPrimalRoar = new ModdedIllustration("SummonerAssets/PrimalRoar.png");
         internal static ModdedIllustration illDraconicFrenzy = new ModdedIllustration("SummonerAssets/DraconicFrenzy.png");
         internal static ModdedIllustration illOstentatiousArrival = new ModdedIllustration("SummonerAssets/OstentatiousArrival.png");
+        internal static ModdedIllustration illFrenziedAssault = new ModdedIllustration("SummonerAssets/FrenziedAssault.png");
+        internal static ModdedIllustration illSeethingFrenzy = new ModdedIllustration("SummonerAssets/SeethingFrenzy.png");
+        internal static ModdedIllustration illDisciplineTheLegion = new ModdedIllustration("SummonerAssets/DisciplineTheLegion.png");
+
+        // Portraits
         internal static List<ModdedIllustration> portraits = new List<ModdedIllustration>();
 
         // SpellIDs
@@ -317,11 +339,44 @@ namespace Dawnsbury.Mods.Classes.Summoner {
         private static readonly string AzataEidolonFlavour = "Your eidolon is an azata, a celestial embodiment of freedom, creativity, whimsy and revelry. They usually take humanoid forms, sometimes incorporating nature motifs. " +
             "Your eidolon is happy to serve as your protector and muse as long as you show the same kindness and respect for freedom and autonomy to others as it does.";
 
-        private static readonly string AzataEidolonCrunch = "\n\n• {b}Tradition{/b} Divine\n• {b}Skills{/b} Divine, Persuasion\n\n" +
+        private static readonly string AzataEidolonCrunch = "\n\n• {b}Tradition{/b} Divine\n• {b}Skills{/b} Religion, Persuasion\n\n" +
             "{b}Initial Eidolon Ability (Celestial Passion) {icon:Action}.{/b} One ally within 15-feet of your eidolon gains temporary HP equal to its level, and a +1 bonus to attack and skill checks for 1 round. Cannot be used on the same ally more than once per encounter." +
             "\n\n{i}At level 7{/i}\n{b}Symbiosis Eidolon Ability (Whimsical Aura).{/b} The wonder and whimsy of Elysium manifests around your eidolon in an aura. Your eidolon and all allies within a 15-foot aura gain a +5-foot status bonus to their speed at the " +
             "start of their turn. In addition, each ally within this aura at the end of your turn, reduces their frightened value by 1." +
             "\n\n{b}Credits{/b} {i}Designed by LeoRandger{/i}";
+
+        private static readonly string DevilEidolonFlavour = "Your eidolon is a devil - a creature born in the depths of Nine Hells,the embodiment of order and tyranny. Whether tricked into being linked to each other through an infernal " +
+            "contract or connected through means, your companion represents the interest of his infernal patrons in mortal affairs. He might act authoritative or submit to you, but while your goals align, it shall follow you on your adventures. " +
+            "You only have to worry whether your soul is destined for its home...";
+
+        private static readonly string DevilEidolonCrunch = "\n\n• {b}Tradition{/b} Divine\n• {b}Skills{/b} Religion, Intimidation\n\n" +
+            "{b}Initial Eidolon Ability (Hellfire Scourage).{/b} Your eidolon gains resistance to fire equal to their level (minimum 1), and an equivalent weakness to good (minimum 1). In addition, the first attack they make against a Frightened creature each turn, deals an additional 1d4 fire damage." +
+            "\n\n{i}At level 7{/i}\n{b}Symbiosis Eidolon Ability (Legion Commander) {icon:Action}.{/b} Your eidolon shouts a commands at one ally within 30-feet. The next time that ally attacks or makes a skill check before the start of your next turn, your eidolon can use their reaction " +
+            "to make an Intimidation check against an easy DC for their level.\n{b}Critical Success{/b} You grant your ally a +2 circumstance bonus to the triggering check. If you’re a master with the check you attempted, the bonus is +3, and if you’re legendary, it’s +4." +
+            "\n{b}Success{/b} You grant your ally a +1 circumstance bonus to the triggering check.\n{b}Critical Failure{/b} Your ally takes a –1 circumstance penalty to the triggering check.\n\nYour ally also deals extra fire damage equal to half your level, " +
+            "if the action your eidolon was assisting them with was an attack." +
+            "\n\n{b}Credits{/b} {i}Designed by LeoRandger{/i}";
+
+        private static readonly string FeyEidolonFlavour = "Your eidolon is a fey, a capricious being of the mysterious First World. Many fey appear similar to mortal humanoids with unusual features such as pointed ears, " +
+            "wings, or bodies composed of natural elements, but the full variety of fey is endless, and many others appear completely inhuman. Fey from the First World never truly die, instead forming a new creature. " +
+            "Fey eidolons usually come about when a summoner helps stabilize a difficult reformation. This means your fey eidolon likely lived a different life just before meeting you and might remember fragments of its old memories. " +
+            "Together, you might have to unravel a memory from your eidolon's past life among the fey.";
+
+        private static readonly string FeyEidolonCrunch = "\n\n• {b}Tradition{/b} Primal\n• {b}Skills{/b} Nature, Deception\n\n" +
+            "{b}Initial Eidolon Ability (Fey Gifts).{/b} Your eidolon expands your primal magic with enchantment and illusion magic, allowing both of you to wield the power of fey charm and glamour. When you add spells to your repertoire, " +
+            "you can choose from the primal list as well as from enchantment and illusion spells that appear on the arcane spell list. As usual for when you add spells of a different tradition to your spell list, you're still a primal spellcaster, " +
+            "so all of your spells are primal spells.\n\nYour eidolon gains the Magical Understudy summoner feat, despite not meeting the prerequisite level, and it can choose fey gift cantrips in addition to primal cantrips." +
+            "\n\n{i}At level 7{/i}\n{b}Symbiosis Eidolon Ability (Fey Mischief).{/b} Your eidolon's fey magic becomes more powerful and mischievous. Your eidolon gains the Magical Adept feat, despite not meeting the prerequisite level, " +
+            "and can choose from fey gift spells in addition to primal spells.";
+
+        private static readonly string AngerPhantomFlavour = "Your eidolon is a lost soul, bound to the mortal world by undying anger or a bitter grudge. Most phantom eidolons are humanoids with a spectral or ectoplasmic appearance, " +
+            "though some take far stranger forms. Your link with your eidolon prevents it from succumbing to corruption and undeath. Together, you will need to decide whether to work with your eidolon to control its anger, or channel its wrath into power.";
+
+        private static readonly string AngerPhantomCrunch = "\n\n• {b}Tradition{/b} Occult\n• {b}Skills{/b} Occultism, Intimidation\n\n" +
+            "{b}Initial Eidolon Ability (Fenzied Assault) {icon:TwoActions}.{/b} Your eidolon makes two strikes against a single target, one with each of its unarmed attacks, at its current MAP penalty. " +
+            "The damage from both attacks are combined for the purposes of damage resistance." +
+            "\n\n{i}At level 7{/i}\n{b}Symbiosis Eidolon Ability (Seething Frenzy) {icon:Action}.{/b} Your eidolon enters a seething frenzy, disregarding its own safety to tear your foes apart. " +
+            "It gains temporary HP equal to its level, and a +4 damage bonus to its unarmed strike attacks, but it takes a -2 penalty to AC. The rage lasts until the end of the encounter, and leaves your eidolon fatigued if they leave early.";
 
         [DawnsburyDaysModMainMethod]
         public static void LoadMod() {
@@ -416,6 +471,15 @@ namespace Dawnsbury.Mods.Classes.Summoner {
             yield return CreateEidolonFeat(scAzataEidolonCrusader, "Your eidolon is a benevolant crusader of Elysium.", new int[6] { 4, 2, 3, -1, 0, 1 }, 2, 3);
             yield return CreateEidolonFeat(scAzataEidolonPoet, "Your eidolon is an inspiring muse of Elysium.", new int[6] { 1, 4, 1, -1, 1, 3 }, 1, 4);
 
+            Feat devilEidolon = new EidolonBond(scDevilEidolon, DevilEidolonFlavour, DevilEidolonCrunch, Trait.Divine, new List<FeatName>() { FeatName.Religion, FeatName.Intimidation },
+                new Func<Feat, bool>(ft => new FeatName[] { ftALawfulEvil }.Contains(ft.FeatName)), new List<Trait>() { Trait.Homebrew }, null)
+            .WithOnSheet((Action<CalculatedCharacterSheetValues>)(values => {
+                values.AddSelectionOptionRightNow((SelectionOption)new SingleFeatSelectionOption("DevilEidolonArray", "Eidolon Ability Scores", 1, (Func<Feat, bool>)(ft => new FeatName[] { scDevilEidolonBarrister, scDevilEidolonLegionnaire }.Contains(ft.FeatName))));
+            }));
+
+            yield return CreateEidolonFeat(scDevilEidolonLegionnaire, "Your eidolon is a ruthlessly professional legionnaire of hell.", new int[6] { 4, 2, 2, 0, -1, 2 }, 2, 3);
+            yield return CreateEidolonFeat(scDevilEidolonBarrister, "Your eidolon is a cunning and corruptive barrister of hell.", new int[6] { 1, 4, 1, 0, 1, 2 }, 1, 4);
+
             Feat beastEidolon = new EidolonBond(scBeastEidolon, BeastEidolonFlavour, BeastEidolonCrunch, Trait.Primal, new List<FeatName>() { FeatName.Nature, FeatName.Intimidation }, new Func<Feat, bool>(ft => ft.HasTrait(tAlignment)))
                 .WithOnSheet((Action<CalculatedCharacterSheetValues>)(values => {
                     values.AddSelectionOptionRightNow((SelectionOption)new SingleFeatSelectionOption("AngelicEidolonArray", "Eidolon Ability Scores", 1, (Func<Feat, bool>)(ft => new FeatName[] { scBeastEidolonBrutal, scBeastEidolonFleet }.Contains(ft.FeatName))));
@@ -431,6 +495,23 @@ namespace Dawnsbury.Mods.Classes.Summoner {
 
             yield return CreateEidolonFeat(scDevoPhantomEidolonStalwart, "Your eidolon is an unyielding guardian.", new int[6] { 4, 2, 3, 0, 0, 0 }, 2, 3);
             yield return CreateEidolonFeat(scDevoPhantomEidolonSwift, "Your eidolon is a vigilant protector.", new int[6] { 2, 4, 3, 0, 0, 0 }, 1, 4);
+
+            Feat angerPhantom = new EidolonBond(scAngerPhantom, AngerPhantomFlavour, AngerPhantomCrunch, Trait.Occult, new List<FeatName>() { FeatName.Occultism, FeatName.Intimidation }, new Func<Feat, bool>(ft => ft.HasTrait(tAlignment)))
+            .WithOnSheet((Action<CalculatedCharacterSheetValues>)(values => {
+                values.AddSelectionOptionRightNow((SelectionOption)new SingleFeatSelectionOption("AngerPhantomEidolonArray", "Eidolon Ability Scores", 1, (Func<Feat, bool>)(ft => new FeatName[] { scAngerPhantomBerserker, scAngerPhantomAssassin }.Contains(ft.FeatName))));
+            }));
+
+            yield return CreateEidolonFeat(scAngerPhantomBerserker, "Your eidolon is an unyielding guardian.", new int[6] { 4, 2, 3, -1, 0, 1 }, 2, 3);
+            yield return CreateEidolonFeat(scAngerPhantomAssassin, "Your eidolon is a vigilant protector.", new int[6] { 2, 4, 3, 0, -1, 1 }, 1, 4);
+
+            Feat feyEidolon = new EidolonBond(scFeyEidolon, FeyEidolonFlavour, FeyEidolonCrunch, Trait.Primal, new List<FeatName>() { FeatName.Nature, FeatName.Deception },
+                new Func<Feat, bool>(ft => ft.HasTrait(tAlignment)))
+            .WithOnSheet((Action<CalculatedCharacterSheetValues>)(values => {
+                values.AddSelectionOptionRightNow((SelectionOption)new SingleFeatSelectionOption("FeyEidolonArray", "Eidolon Ability Scores", 1, (Func<Feat, bool>)(ft => new FeatName[] { scFeyEidolonSkirmisher, scFeyEidolonTrickster }.Contains(ft.FeatName))));
+            }));
+
+            yield return CreateEidolonFeat(scFeyEidolonSkirmisher, "Your eidolon is an illusive predator of the first world.", new int[6] { 2, 4, 2, 0, 0, 1 }, 1, 4);
+            yield return CreateEidolonFeat(scFeyEidolonTrickster, "Your eidolon is a mercurial trickster of the first world.", new int[6] { 1, 4, 1, 1, -1, 3 }, 1, 4);
 
             Feat draconicEidolon = new Feat(scDraconicEidolon, DraconicEidolonFlavour, DraconicEidolonCrunch, new List<Trait>() { }, null)
                 .WithOnSheet((Action<CalculatedCharacterSheetValues>)(values => {
@@ -497,14 +578,11 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                 Trait.Arcane, new List<FeatName>() { FeatName.Religion, FeatName.Intimidation }, new Func<Feat, bool>(ft => ft.HasTrait(tAlignment) && ft.HasTrait(Trait.Good)),
                 new List<Trait>() { Trait.Cold, tDragonType }, new List<Feat>() { dragonConeBreath, dragonLineBreath });
 
-            // Imperial
-            // TODO: Add imperial dragons
-
             // Init class
             yield return new ClassSelectionFeat(classSummoner, SummonerFlavour, tSummoner,
                 new EnforcedAbilityBoost(Ability.Charisma), 10, new Trait[5] { Trait.Unarmed, Trait.Simple, Trait.UnarmoredDefense, Trait.Reflex, Trait.Perception }, new Trait[2] { Trait.Fortitude, Trait.Will }, 3, SummonerCrunch, new List<Feat>() {
                     // Sublcasses:
-                    angelicEidolon, azataEidolon, draconicEidolon, beastEidolon, devoPhantomEidolon
+                    angelicEidolon, angerPhantom, azataEidolon, beastEidolon, devilEidolon, devoPhantomEidolon, draconicEidolon, feyEidolon
                 })
                     .WithOnSheet((Action<CalculatedCharacterSheetValues>)(sheet => {
                         sheet.AddFocusSpellAndFocusPoint(tSummoner, Ability.Charisma, spells[SummonerSpellId.EvolutionSurge]);
@@ -556,22 +634,6 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                 }
                 yield return temp;
             }
-
-            // Eidolon's Wrath
-            //List<Feat> ewSubFeats = new List<Feat>();
-            //foreach (DamageKind energy in energyDamageTypes.Concat(alignmentDamageTypes)) {
-            //    EvolutionFeat temp = new EvolutionFeat(ModManager.RegisterFeatName("EidolonsWrath" + energy.HumanizeTitleCase2(), "Eidolon's Wrath: " + energy.HumanizeTitleCase2()), 6, "", $"The Eidolon's Wrath focus spell deals {energy.HumanizeTitleCase2()} damage", new Trait[] { DamageToTrait(energy) }, e => e.AddQEffect(new QEffect() { Id = qfEidolonsWrath, Tag = energy }), null);
-            //    if (alignmentDamageTypes.Contains(energy)) {
-            //        temp.WithPrerequisite((sheet => {
-            //            if (sheet.AllFeats.FirstOrDefault(ft => divineTypes.Contains(ft.FeatName.HumanizeTitleCase2())) == null)
-            //                return false;
-            //            if (sheet.AllFeats.FirstOrDefault(ft => ft.HasTrait(DamageToTrait(energy)) && ft.HasTrait(tAlignment)) == null)
-            //                return false;
-            //            return true;
-            //        }), $"Your eidolon must be of {DamageToTrait(energy).HumanizeTitleCase2()} alignment, and celestial origin.");
-            //    }
-            //    ewSubFeats.Add(temp);
-            //}
 
             List<Feat> ewSubFeats = new List<Feat>();
             foreach (DamageKind energy in energyDamageTypes.Concat(alignmentDamageTypes)) {
@@ -757,15 +819,23 @@ namespace Dawnsbury.Mods.Classes.Summoner {
 
             // Generate spell selection feats
             List<Spell> allSpells = AllSpells.All.Where(sp => (sp.HasTrait(Trait.Cantrip) || sp.SpellLevel <= 2) && !sp.HasTrait(Trait.Focus) && !sp.HasTrait(Trait.Uncommon)).ToList();
+
+            List<SpellId> moddedSpells = (List<SpellId>)typeof(ModManager).GetProperty("NewSpells", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static).GetValue(null);
+            List<Spell> moddedSpells2 = new List<Spell>();
+            foreach (SpellId spell in (List<SpellId>)moddedSpells) {
+                moddedSpells2.Add(AllSpells.CreateModernSpellTemplate(spell, tSummoner));
+            }
+            allSpells = allSpells.Concat(moddedSpells2).ToList();
+
             foreach (Spell spell in allSpells) {
                 List<Trait> traits = new List<Trait>() { tEidolonSpellFeat };
                 if (spell.HasTrait(Trait.Cantrip) == false) {
-                    if (spell.MinimumSpellLevel == 1)
+                    if (spell.MinimumSpellLevel >= 1)
                         traits.Add(tEidolonSpellLvl1);
-                    if (spell.MinimumSpellLevel == 2)
+                    if (spell.MinimumSpellLevel >= 2)
                         traits.Add(tEidolonSpellLvl2);
                 }
-                Feat temp = new EvolutionFeat(ModManager.RegisterFeatName($"EidolonSpellGainFeat({spell.Name})", spell.Name), spell.MinimumSpellLevel, "", spell.CombatActionSpell.Description, spell.Traits.ToList().Concat(traits).ToArray(), e => {
+                Feat temp = new EvolutionFeat(ModManager.RegisterFeatName($"EidolonSpellGainFeat({spell.Name})", spell.Name), spell.MinimumSpellLevel, "", AllSpells.CreateModernSpell(spell.SpellId, null, 1, false, spell.CombatActionSpell.SpellInformation).CombatActionSpell.Description, spell.Traits.ToList().Concat(traits).ToArray(), e => {
                     if (spell.MinimumSpellLevel < 2) {
                         e.Spellcasting.PrimarySpellcastingSource.WithSpells(new SpellId[] { spell.SpellId });
                     } else {
@@ -776,19 +846,38 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                 yield return temp;
             }
 
-            yield return new EvolutionFeat(ModManager.RegisterFeatName("Magical Understudy"), 2, "Your eidolon evolves to cast spells.",
+            yield return new EvolutionFeat(ftMagicalUnderstudy, 2, "Your eidolon evolves to cast spells.",
                 "Your eidolon gains the Cast a Spell activity and learns two cantrips of its tradition, which it can cast as innate spells.\n\nYour eidolon's spell DC and attack moddifier for these spells is equal to yours.",
                 new Trait[] { tSummoner }, (Action<Creature>)null, null)
             .WithOnSheet(sheet => {
-                sheet.AddSelectionOptionRightNow(new MultipleFeatSelectionOption("EidolonCantrip", "Eidolon Cantrips", -1, ft => ft.HasTrait(tEidolonSpellFeat) && ft.HasTrait(Trait.Cantrip) && ft.HasTrait(sheet.SpellRepertoires[tSummoner].SpellList), 2));
+                if (sheet.HasFeat(scFeyEidolon)) {
+                    //if (true && true && (true || (false && (false || true || false)))) {
+                    //    int test = 4;
+                    //}
+
+                    sheet.AddSelectionOptionRightNow(new MultipleFeatSelectionOption("EidolonCantrip", "Eidolon Cantrips", -1, ft => ft.HasTrait(tEidolonSpellFeat) && ft.HasTrait(Trait.Cantrip) &&
+                    (ft.HasTrait(sheet.SpellRepertoires[tSummoner].SpellList) || (ft.HasTrait(Trait.Arcane) && (ft.HasTrait(Trait.Enchantment) || ft.HasTrait(Trait.Illusion) || ft.HasTrait(Trait.Mental)))), 2));
+                } else {
+                    sheet.AddSelectionOptionRightNow(new MultipleFeatSelectionOption("EidolonCantrip", "Eidolon Cantrips", -1, ft => ft.HasTrait(tEidolonSpellFeat) && ft.HasTrait(Trait.Cantrip) && ft.HasTrait(sheet.SpellRepertoires[tSummoner].SpellList), 2));
+                }
             });
 
-            yield return new EvolutionFeat(ModManager.RegisterFeatName("Magical Adept"), 8, "Your eidolon gains more magic.",
+            yield return new EvolutionFeat(ftMagicalAdept, 8, "Your eidolon gains more magic.",
                 "Choose one 2nd-level spell and one 1st-level spell of your eidolon's tradition. Your eidolon can cast them each once per day as innate spells.",
                 new Trait[] { tSummoner }, (Action<Creature>)null, null)
             .WithOnSheet(sheet => {
-                sheet.AddSelectionOptionRightNow(new MultipleFeatSelectionOption("Eidolon2ndLevelSpell", "Level 2 Eidolon Spell", -1, ft => ft.HasTrait(tEidolonSpellFeat) && ft.HasTrait(tEidolonSpellLvl2) && ft.HasTrait(sheet.SpellRepertoires[tSummoner].SpellList), 1));
-                sheet.AddSelectionOptionRightNow(new MultipleFeatSelectionOption("Eidolon1stLevelSpell", "Level 1 Eidolon Spell", -1, ft => ft.HasTrait(tEidolonSpellFeat) && ft.HasTrait(tEidolonSpellLvl1) && ft.HasTrait(sheet.SpellRepertoires[tSummoner].SpellList), 1));
+                if (sheet.HasFeat(scFeyEidolon)) {
+                    sheet.AddSelectionOptionRightNow(new MultipleFeatSelectionOption("EidolonCantrip", "Eidolon Cantrips", -1, ft => ft.HasTrait(tEidolonSpellFeat) && ft.HasTrait(Trait.Cantrip) &&
+                    (ft.HasTrait(sheet.SpellRepertoires[tSummoner].SpellList) || (ft.HasTrait(Trait.Arcane) && (ft.HasTrait(Trait.Enchantment) || ft.HasTrait(Trait.Illusion) || ft.HasTrait(Trait.Mental)))), 2));
+
+                    sheet.AddSelectionOptionRightNow(new MultipleFeatSelectionOption("Eidolon2ndLevelSpell", "Level 2 Eidolon Spell", -1, ft => ft.HasTrait(tEidolonSpellFeat) &&
+                    ft.HasTrait(tEidolonSpellLvl2) && (ft.HasTrait(sheet.SpellRepertoires[tSummoner].SpellList) || (ft.HasTrait(Trait.Arcane) && (ft.HasTrait(Trait.Enchantment) || ft.HasTrait(Trait.Illusion) || ft.HasTrait(Trait.Mental)))), 1));
+                    sheet.AddSelectionOptionRightNow(new MultipleFeatSelectionOption("Eidolon1stLevelSpell", "Level 1 Eidolon Spell", -1, ft => ft.HasTrait(tEidolonSpellFeat) &&
+                    ft.HasTrait(tEidolonSpellLvl1) && (ft.HasTrait(sheet.SpellRepertoires[tSummoner].SpellList) || (ft.HasTrait(Trait.Arcane) && (ft.HasTrait(Trait.Enchantment) || ft.HasTrait(Trait.Illusion) || ft.HasTrait(Trait.Mental)))), 1));
+                } else {
+                    sheet.AddSelectionOptionRightNow(new MultipleFeatSelectionOption("Eidolon2ndLevelSpell", "Level 2 Eidolon Spell", -1, ft => ft.HasTrait(tEidolonSpellFeat) && ft.HasTrait(tEidolonSpellLvl2) && ft.HasTrait(sheet.SpellRepertoires[tSummoner].SpellList), 1));
+                    sheet.AddSelectionOptionRightNow(new MultipleFeatSelectionOption("Eidolon1stLevelSpell", "Level 1 Eidolon Spell", -1, ft => ft.HasTrait(tEidolonSpellFeat) && ft.HasTrait(tEidolonSpellLvl1) && ft.HasTrait(sheet.SpellRepertoires[tSummoner].SpellList), 1));
+                }
             });
 
             yield return new EvolutionFeat(ModManager.RegisterFeatName("Eidolon's Opportunity {icon:Reaction}"), 6,
@@ -994,7 +1083,7 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                 new Trait[] { tSummoner }, e => e.AddQEffect(new QEffect {
                 StartOfCombat = (async (qf) => {
                     DamageKind kind = TraitToDamage(GetSummoner(qf.Owner).PersistentCharacterSheet.Calculated.AllFeats.FirstOrDefault(ft => ft.HasTrait(tEnergyHeartDamage)).Traits[0]);
-                    qf.Owner.WeaknessAndResistance.AddResistance(kind, Math.Max(1, (qf.Owner.Level / 2)));
+                    qf.Owner.AddQEffect(QEffect.DamageResistance(kind, Math.Max(1, (qf.Owner.Level / 2))));
                 })
             }), new List<Feat> {
                 new Feat(ModManager.RegisterFeatName("EH_PrimaryUnarmedAttack", "Primary Unarmed Attack"), "", "This evolution will change the damage type of your eidolon's primary natural weapon attack.", new List<Trait>() { tEnergyHeartWeapon }, null).WithOnSheet(sheet => {
@@ -1306,6 +1395,7 @@ namespace Dawnsbury.Mods.Classes.Summoner {
         }
 
         public class EidolonBond : Feat {
+
             public EidolonBond(FeatName featName, string flavourText, string rulesText, Trait spellList, List<FeatName> skills, Func<Feat, bool> alignmentOptions, List<Trait> traits, List<Feat> subfeats) : base(featName, flavourText, rulesText, traits, subfeats) {
                 Init(spellList, skills, alignmentOptions);
             }
@@ -1326,16 +1416,31 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                     foreach (FeatName skill in skills) {
                         sheet.GrantFeat(skill);
                     }
+                    if (this.FeatName == scFeyEidolon)
+                        sheet.AddFeat(AllFeats.All.FirstOrDefault(ft => ft.FeatName == ftMagicalUnderstudy), null);
                     SpellRepertoire repertoire = sheet.SpellRepertoires[tSummoner];
-                    sheet.AddSelectionOption((SelectionOption)new AddToSpellRepertoireOption("SummonerCantrips", "Cantrips", 1, tSummoner, spellList, 0, 5));
-                    sheet.AddSelectionOption((SelectionOption)new AddToSpellRepertoireOption("SummonerSpells1", "Level 1 spells", 1, tSummoner, spellList, 1, 2));
-                    sheet.AddSelectionOption((SelectionOption)new AddToSpellRepertoireOption("SummonerSpells2", "Level 1 spell", 2, tSummoner, spellList, 1, 1));
-                    sheet.AddSelectionOption((SelectionOption)new AddToSpellRepertoireOption("SummonerSpells3", "Level 2 spells", 3, tSummoner, spellList, 2, 1));
-                    sheet.AddSelectionOption((SelectionOption)new AddToSpellRepertoireOption("SummonerSpells4", "Level 2 spell", 4, tSummoner, spellList, 2, 1));
+                    if (this.FeatName != scFeyEidolon) {
+                        sheet.AddSelectionOption((SelectionOption)new AddToSpellRepertoireOption("SummonerCantrips", "Cantrips", 1, tSummoner, spellList, 0, 5));
+                        sheet.AddSelectionOption((SelectionOption)new AddToSpellRepertoireOption("SummonerSpells1", "Level 1 spells", 1, tSummoner, spellList, 1, 2));
+                        sheet.AddSelectionOption((SelectionOption)new AddToSpellRepertoireOption("SummonerSpells2", "Level 1 spell", 2, tSummoner, spellList, 1, 1));
+                        sheet.AddSelectionOption((SelectionOption)new AddToSpellRepertoireOption("SummonerSpells3", "Level 2 spells", 3, tSummoner, spellList, 2, 1));
+                        sheet.AddSelectionOption((SelectionOption)new AddToSpellRepertoireOption("SummonerSpells4", "Level 2 spell", 4, tSummoner, spellList, 2, 1));
+                    } else {
+                        sheet.AddSelectionOption((SelectionOption)new SelectFeySpells("SummonerCantrips", "Cantrips", 1, tSummoner, 0, 5, true));
+                        sheet.AddSelectionOption((SelectionOption)new SelectFeySpells("SummonerSpells1", "Level 1 spells", 1, tSummoner, 1, 2));
+                        sheet.AddSelectionOption((SelectionOption)new SelectFeySpells("SummonerSpells2", "Level 1 spell", 2, tSummoner, 1, 1));
+                        sheet.AddSelectionOption((SelectionOption)new SelectFeySpells("SummonerSpells3", "Level 2 spells", 3, tSummoner, 2, 1));
+                        sheet.AddSelectionOption((SelectionOption)new SelectFeySpells("SummonerSpells4", "Level 2 spell", 4, tSummoner, 2, 1));
+                    }
+
                     repertoire.SpellSlots[1] = 1;
                     sheet.AddAtLevel(2, (Action<CalculatedCharacterSheetValues>)(_ => ++repertoire.SpellSlots[1]));
                     sheet.AddAtLevel(3, (Action<CalculatedCharacterSheetValues>)(_ => ++repertoire.SpellSlots[2]));
                     sheet.AddAtLevel(4, (Action<CalculatedCharacterSheetValues>)(_ => ++repertoire.SpellSlots[2]));
+
+                    if (this.FeatName == scFeyEidolon)
+                        sheet.AddAtLevel(7, sheet => sheet.AddFeat(AllFeats.All.FirstOrDefault(ft => ft.FeatName == ftMagicalAdept), null));
+
                     for (int index = 5; index <= 17; index += 2) {
                         int thisLevel = index;
                         sheet.AddAtLevel(thisLevel, (Action<CalculatedCharacterSheetValues>)(values => {
@@ -1350,12 +1455,17 @@ namespace Dawnsbury.Mods.Classes.Summoner {
 
                             int tradition = (int)spellList;
                             int maximumSpellLevel = num;
-                            //AddToSpellRepertoireOption repertoireOption1 = new AddToSpellRepertoireOption($"SummonerSpells{sheet.CurrentLevel}-1", $"Level {num - 1} spell", thisLevel, tSummoner, spellList, maximumSpellLevel - 1, 1);
-                            AddToSpellRepertoireOption repertoireOption2 = new AddToSpellRepertoireOption($"SummonerSpells{sheet.CurrentLevel}-2", $"Level {num - 1} spells", thisLevel, tSummoner, spellList, maximumSpellLevel - 1, 3);
-                            AddToSpellRepertoireOption repertoireOption3 = new AddToSpellRepertoireOption($"SummonerSpells{sheet.CurrentLevel}-3", $"Level {num} spells", thisLevel, tSummoner, spellList, maximumSpellLevel, 2);
-                            //values.AddSelectionOption((SelectionOption)repertoireOption1);
+                            AddToSpellRepertoireOption repertoireOption1;
+                            AddToSpellRepertoireOption repertoireOption2;
+                            if (this.FeatName != scFeyEidolon) {
+                                repertoireOption1 = new AddToSpellRepertoireOption($"SummonerSpells{sheet.CurrentLevel}-1", $"Level {num - 1} spells", thisLevel, tSummoner, spellList, maximumSpellLevel - 1, 3);
+                                repertoireOption2 = new AddToSpellRepertoireOption($"SummonerSpells{sheet.CurrentLevel}-2", $"Level {num} spells", thisLevel, tSummoner, spellList, maximumSpellLevel, 2);
+                            } else {
+                                repertoireOption1 = new SelectFeySpells($"SummonerSpells{sheet.CurrentLevel}-1", $"Level {num - 1} spells", thisLevel, tSummoner, maximumSpellLevel - 1, 3);
+                                repertoireOption2 = new SelectFeySpells($"SummonerSpells{sheet.CurrentLevel}-2", $"Level {num} spells", thisLevel, tSummoner, maximumSpellLevel, 2);
+                            }
+                            values.AddSelectionOption((SelectionOption)repertoireOption1);
                             values.AddSelectionOption((SelectionOption)repertoireOption2);
-                            values.AddSelectionOption((SelectionOption)repertoireOption3);
 
                         }));
                     }
@@ -1395,14 +1505,20 @@ namespace Dawnsbury.Mods.Classes.Summoner {
         }
 
         private static string PrintEidolonStatBlock(FeatName bond, int[] abilityScores, int ac, int dexCap) {
-            string text =
+            string general =
                 "{b}Perception{/b} " + Int2Mod((abilityScores[4] + 3)) +
                 "\n{b}Skills{/b} Shares all your skill proficiancies\n" +
                 "\nStr " + Int2Mod(abilityScores[0]) + " Dex " + Int2Mod(abilityScores[1]) + " Con " + Int2Mod(abilityScores[2]) + " Int " + Int2Mod(abilityScores[3]) + " Wis " + Int2Mod(abilityScores[4]) + " Cha " + Int2Mod(abilityScores[5]) + "\n" +
                 "\n{b}{DarkRed}DEFENSE{/b}{/}\n" +
                 "{b}AC{/b} " + (10 + ac + Math.Min(abilityScores[1], dexCap)) + "; {b}Fort{/b} " + Int2Mod((5 + abilityScores[2])) + ", {b}Ref{/b} " + Int2Mod((3 + abilityScores[1])) + ", {b}Will{/b} " + Int2Mod((4 + abilityScores[4])) +
-                "\n{b}AC{/b} Share's your HP pool\n\n" +
-                "{b}{DarkRed}OFFENSE{/b}{/}\n" +
+                "\n{b}HP{/b} Share's your HP pool";
+
+            if (bond == scDevilEidolonBarrister || bond == scDevilEidolonLegionnaire) {
+                general += "\n{b}Resistances{/b} fire 1; {b}Weaknesses{/b} good 1";
+            }
+                
+            general +=
+                "\n\n{b}{DarkRed}OFFENSE{/b}{/}\n" +
                 "{b}Speed{/b} 25 feet\n";
 
             string actions =
@@ -1421,6 +1537,11 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                 actions += "{b}Celestial Passion{/b} {{icon:Action} One ally within 15-feet of your eidolon gains temporary HP equal to its level, and a +1 bonus to attack and skill checks for 1 round. Cannot be used on the same ally more than once per encounter.\n";
             }
 
+            if (bond == scAngerPhantomAssassin || bond == scAngerPhantomBerserker) {
+                actions += "{b}Frenzied Assault{/b} {{icon:TwoActions} Your eidolon makes two strikes against a single target, one with each of its unarmed attacks, at its current MAP penalty. " +
+                "The damage from both attacks are combined for the purposes of damage resistance.\n";
+            }
+
             actions += "{b}Act Together{/b} {icon:FreeAction} Your eidolon's next action grants you an immediate bonus tandem turn, where you can make a single action.\n";
 
             string abilities =
@@ -1435,7 +1556,11 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                 abilities += "\n{b}Dutiful Retaliation {icon:Reaction}.{/b} Your eidolon makes a strike again an enemy that damaged you. Both your eidolon and your attacker must be within 15ft of you.\n";
             }
 
-                return text + actions + abilities;
+            if (bond == scDevilEidolonLegionnaire || bond == scDevilEidolonBarrister) {
+                abilities += "\n{b}Hellfire Scourge{/b} Your eidolon deals +1d4 fire damage to the first frightened creature it strikes each round.\n";
+            }
+
+                return general + actions + abilities;
         }
 
 
@@ -1453,7 +1578,7 @@ namespace Dawnsbury.Mods.Classes.Summoner {
             })
             .AddQEffect(new QEffect("Eidolon", "This character can summon and command an Eidolon.") {
                 StartOfCombat = (Func<QEffect, Task>)(async qfSummonerTechnical => {
-                    Creature eidolon = CreateEidolon(featName, abilityScores, ac, dexCap, summoner);
+                    Creature eidolon = CreateEidolon(abilityScores, ac, dexCap, summoner);
                     eidolon.MainName = qfSummonerTechnical.Owner.Name + "'s " + eidolon.MainName;
 
                     // Share item bonuses
@@ -1469,7 +1594,6 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                         eidolon.AddQEffect(qf1);
                     }
 
-                    // TODO: Bookmark for invested weapon code
                     // Share benfits of handwraps
                     Item handwraps = StrikeRules.GetBestHandwraps(summoner);
                     List<Item> weapons = summoner.HeldItems;
@@ -1516,11 +1640,12 @@ namespace Dawnsbury.Mods.Classes.Summoner {
 
                     summoner.Battle.SpawnCreature(eidolon, summoner.OwningFaction, summoner.Occupies);
 
-                    // Handle evlution feat effects
+                    // Handle evolution feat effects
                     for (int i = 0; i < eidolon.QEffects.Count; i++) {
                         if (eidolon.QEffects[i].StartOfCombat != null)
                             await eidolon.QEffects[i].StartOfCombat(eidolon.QEffects[i]);
                     }
+
                 }),
                 StartOfYourTurn = (Func<QEffect, Creature, Task>)(async (qfStartOfTurn, summoner) => {
                     Creature eidolon = GetEidolon(summoner);
@@ -1826,9 +1951,7 @@ namespace Dawnsbury.Mods.Classes.Summoner {
             ));
         }
 
-        //++combatActionExecution.user.Actions.AttackedThisManyTimesThisTurn
-
-        private static Creature CreateEidolon(FeatName featName, int[] abilityScores, int ac, int dexCap, Creature summoner) {
+        private static Creature CreateEidolon(int[] abilityScores, int ac, int dexCap, Creature summoner) {
             Creature eidolon = CreateEidolonBase("Eidolon", summoner, abilityScores, ac, dexCap);
 
             // Link to summoner
@@ -1925,7 +2048,7 @@ namespace Dawnsbury.Mods.Classes.Summoner {
             });
 
             // Add subclasses
-            if (featName == scAngelicEidolonAvenger || featName == scAngelicEidolonEmmissary) {
+            if (summoner.HasFeat(scAngelicEidolon)) {
                 eidolon.AddQEffect(new QEffect("Hallowed Strikes", "Your eidolon's unarmed strikes deal +1 extra good damage.") {
                     AddExtraKindedDamageOnStrike = (action, target) => {
                         return new KindedDamage(DiceFormula.FromText("1", "Hallowed Strikes"), DamageKind.Good);
@@ -1996,7 +2119,7 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                                             return null;
                                         }
                                         if (await eidolon.Battle.AskToUseReaction(eidolon, "{b}" + attacker + "{/b} uses {b}" + damage.Power.Name + "{/b} for " + damage.Amount + $"damage, which provokes Angelic Aegis Interception.\nUse your reaction reduce the damage by {qf.Source.Level}?")) {
-                                            return (DamageModification) new ReduceDamageModification(qf.Source.Level, "Angelic Aegis Interception");
+                                            return (DamageModification)new ReduceDamageModification(qf.Source.Level, "Angelic Aegis Interception");
                                         }
                                         return null;
                                     }
@@ -2005,7 +2128,7 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                         }),
                     });
                 }
-            } else if (featName == scDraconicEidolonCunning || featName == scDraconicEidolonMarauding) {
+            } else if (summoner.HasFeat(scDraconicEidolon)) {
                 SpellRepertoire repertoire = summoner.PersistentCharacterSheet.Calculated.SpellRepertoires[tSummoner];
                 int saveDC = summoner.GetOrCreateSpellcastingSource(SpellcastingKind.Spontaneous, tSummoner, Ability.Charisma, repertoire.SpellList).GetSpellSaveDC();
 
@@ -2071,11 +2194,11 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                     ProvideMainAction = (Func<QEffect, Possibility>)(qfEidolon => {
                         Creature summoner = GetSummoner(qfEidolon.Owner);
                         int dice = 1 + (summoner.Level + 1) / 2;
-                        CombatAction breathWeapon = new CombatAction(qfEidolon.Owner, IllustrationName.BreathWeapon, "Breath Weapon", traits, "{b}Range{/b} " + 
-                            (targetFeat == ftBreathWeaponCone ? "30-foot cone" : "60-foot line") + "\n{b}Saving Throw{/b} " + 
-                            (save == Defense.Reflex ? "Reflex" : save == Defense.Fortitude ? "Fortitude" : "Will") + 
-                            "\n\nYour eidolon exhales a breath of destructive energy. Deal " + dice + "d6 " + damageName + 
-                            " damage to each creature in the area.\n\n{b}Special.{/b}Your eidolon can't use breath weapon again for 1d4 rounds.\n\nAt 3rd level, and every 2 levels thereafter, damage increases by 1d6." + 
+                        CombatAction breathWeapon = new CombatAction(qfEidolon.Owner, IllustrationName.BreathWeapon, "Breath Weapon", traits, "{b}Range{/b} " +
+                            (targetFeat == ftBreathWeaponCone ? "30-foot cone" : "60-foot line") + "\n{b}Saving Throw{/b} " +
+                            (save == Defense.Reflex ? "Reflex" : save == Defense.Fortitude ? "Fortitude" : "Will") +
+                            "\n\nYour eidolon exhales a breath of destructive energy. Deal " + dice + "d6 " + damageName +
+                            " damage to each creature in the area.\n\n{b}Special.{/b}Your eidolon can't use breath weapon again for 1d4 rounds.\n\nAt 3rd level, and every 2 levels thereafter, damage increases by 1d6." +
                             (damageKind == DamageKind.Negative ? "\n\nTheir ghost killing breath weapon deals force damage to undead creatures." : ""), target) {
                             ShortDescription = "Your eidolon exhales a breath of destructive energy. Deal " + dice + "d6 " + damageName + " damage to each creature in the area."
                         }
@@ -2106,7 +2229,7 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                             breathWeapon.WithProjectileCone(IllustrationName.BreathWeapon, 20, ProjectileKind.Ray);
                         }
 
-                        return (Possibility)(ActionPossibility) breathWeapon;
+                        return (Possibility)(ActionPossibility)breathWeapon;
                     }),
                 });
 
@@ -2153,7 +2276,7 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                                         if (options.Count >= 2) {
                                             options.Add((Option)new CancelOption(true));
                                             chosenOption = (await self.Battle.SendRequest(new AdvancedRequest(self, "Choose a creature to Strike.", options) {
-                                                TopBarText = $"Choose a creature to Strike or right-click to cancel. ({i+1}/3)",
+                                                TopBarText = $"Choose a creature to Strike or right-click to cancel. ({i + 1}/3)",
                                                 TopBarIcon = illDraconicFrenzy
                                             })).ChosenOption;
                                         } else
@@ -2164,6 +2287,9 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                                             return;
                                         }
                                         int num = await chosenOption.Action() ? 1 : 0;
+                                        foreach (Creature creature in self.Battle.AllCreatures) {
+                                            creature.WeaknessAndResistance.Reset();
+                                        }
                                     }
                                 }
                                 self.RemoveAllQEffects(qf => qf.Key == "Draconic Frenzy");
@@ -2171,7 +2297,7 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                         }),
                     });
                 }
-            } else if (featName == scBeastEidolonBrutal || featName == scBeastEidolonFleet) {
+            } else if (summoner.HasFeat(scBeastEidolon)) {
                 eidolon.AddQEffect(new QEffect() {
                     ProvideMainAction = (qfSelf => {
                         return (ActionPossibility)new CombatAction(qfSelf.Owner, illBeastsCharge, "Beast's Charge", new Trait[] { Trait.Move },
@@ -2236,7 +2362,7 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                         }
                     });
                 }
-            } else if (featName == scDevoPhantomEidolonStalwart || featName == scDevoPhantomEidolonSwift) {
+            } else if (summoner.HasFeat(scDevoPhantomEidolon)) {
                 eidolon.AddQEffect(new QEffect("Dutiful Retaliation {icon:Reaction}", "Your eidolon makes a strike again an enemy that damaged you. Both your eidolon and your attacker must be within 15ft of you."));
                 summoner.AddQEffect(new QEffect() {
                     AfterYouTakeDamage = (async (qf, amount, damagekind, action, critical) => {
@@ -2308,7 +2434,7 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                         })
                     });
                 }
-            } else if (featName == scAzataEidolonCrusader || featName == scAzataEidolonCrusader) {
+            } else if (summoner.HasFeat(scAzataEidolon)) {
                 eidolon.AddQEffect(new QEffect() {
                     ProvideMainAction = qfCelestialPassion => {
                         return (Possibility)(ActionPossibility)new CombatAction(qfCelestialPassion.Owner, IllustrationName.AngelicHalo, "Celestial Passion", new Trait[] { Trait.Divine, Trait.Concentrate, Trait.Emotion, Trait.Mental, Trait.Auditory },
@@ -2374,8 +2500,144 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                         }
                     });
                 }
-            } else {
-                throw new Exception("ERROR: Invalid eidolon bond chosen. Please check trait names.");
+            } else if (summoner.HasFeat(scDevilEidolon)) {
+                eidolon.AddQEffect(QEffect.DamageResistance(DamageKind.Fire, Math.Max(1, (eidolon.Level / 2))));
+                eidolon.AddQEffect(QEffect.DamageWeakness(DamageKind.Good, Math.Max(1, (eidolon.Level / 2))));
+                eidolon.AddQEffect(new QEffect("Hellfire Scourge", "Your eidolon deals +1d4 fire damage to the first frightened creature it strikes each round.") {
+                    Tag = false,
+                    StartOfYourTurn = async (effect, self) => {
+                        effect.Tag = false;
+                    },
+                    AddExtraKindedDamageOnStrike = (action, target) => {
+                        if (target.HasEffect(QEffectId.Frightened) && (bool)action.Owner.QEffects.FirstOrDefault(qf => qf.Name == "Hellfire Scourge").Tag == false) {
+                            action.Owner.QEffects.FirstOrDefault(qf => qf.Name == "Hellfire Scourge").Tag = true;
+                            return new KindedDamage(DiceFormula.FromText("1d4"), DamageKind.Fire);
+                        }
+                        return null;
+                    }
+                });
+                if (eidolon.Level >= 7) {
+                    eidolon.AddQEffect(new QEffect() {
+                        ProvideMainAction = effect => {
+                            return new ActionPossibility(new CombatAction(effect.Owner, illDisciplineTheLegion, "Discipline the Legion", new Trait[] {
+                                tSummoner, Trait.Linguistic, Trait.Concentrate, Trait.Mental, Trait.Emotion },
+                                "Your eidolon shouts a commands at one ally within 30-feet. The next time that ally attacks or makes a skill check before the start of your next turn, your eidolon can " +
+                                "use their reaction to make an Intimidation check against an easy DC for their level.\n\n{b}Critical Success{/b} You grant your ally a +2 circumstance bonus to the triggering " +
+                                "check. If you’re a master with the check you attempted, the bonus is +3, and if you’re legendary, it’s +4.\n{b}Success{/b} You grant your ally a +1 circumstance bonus to " +
+                                "the triggering check.\n{b}Critical Failure{/b} Your ally takes a –1 circumstance penalty to the triggering check.\n\nYour ally also deals extra fire damage equal to half your " +
+                                "level, if the action your eidolon was assisting them with was an attack.", (Target)Target.RangedFriend(6).WithAdditionalConditionOnTargetCreature((source, target) => {
+                                    if (target.QEffects.FirstOrDefault(qf => qf.Key == "Infernal Command") != null) {
+                                        return Usability.Usable;
+                                    }
+                                    return Usability.NotUsableOnThisCreature("Your eidolon has already disciplined this creature.");
+                                }))
+                                .WithActionCost(1)
+                                .WithEffectOnChosenTargets((Func<Creature, ChosenTargets, Task>)(async (self, targets) => {
+                                    targets.ChosenCreature.AddQEffect(new QEffect("Infernal Command", $"This creature has the attention of {self.Name}, and is ready to be spurred into decisive action.") {
+                                        Illustration = illDisciplineTheLegion,
+                                        Source = self,
+                                        Key = "Infernal Command",
+                                        ExpiresAt = ExpirationCondition.ExpiresAtStartOfSourcesTurn,
+                                        BeforeYourActiveRoll = async (effect, action, innerTarget) => {
+                                            if (await eidolon.Battle.AskToUseReaction(eidolon, "{b}" + effect.Owner + "{/b} is about to use {b}" + action.Name + "{/b} against ?" + innerTarget?.ToString() + ".\nRoll for Discipline the Legion?")) {
+                                                CheckResult result = CommonSpellEffects.RollCheck("Discipline the Legion", new ActiveRollSpecification(Checks.SkillCheck(new Skill[] { Skill.Intimidation, Skill.Deception }), Checks.FlatDC(GetDCByLevel(self.Level) - 2)), self, effect.Owner);
+                                                int bonus = 0;
+                                                if (result == CheckResult.CriticalSuccess) {
+                                                    bonus = Math.Max((int)self.Proficiencies.AllProficiencies[Trait.Intimidation], (int)self.Proficiencies.AllProficiencies[Trait.Deception]);
+                                                    bonus = Math.Max(2, bonus / 2);
+                                                }
+                                                else if (result == CheckResult.Success) {
+                                                    bonus = 1;
+                                                }
+                                                else if (result == CheckResult.CriticalFailure) {
+                                                    bonus = -1;
+                                                }
+
+                                                effect.Owner.AddQEffect(new QEffect() {
+                                                    BonusToSkillChecks = (skill, action, target) => {
+                                                        return new Bonus(bonus, BonusType.Circumstance, "Infernal Command");
+                                                    },
+                                                    BonusToAttackRolls = (effect, action, target) => {
+                                                        return new Bonus(bonus, BonusType.Circumstance, "Infernal Command");
+                                                    },
+                                                    AddExtraKindedDamageOnStrike = (action, target) => {
+                                                        if (target == innerTarget) {
+                                                            effect.ExpiresAt = ExpirationCondition.Immediately;
+                                                            return new KindedDamage(DiceFormula.FromText($"{eidolon.Level / 2}"), DamageKind.Fire);
+                                                        }
+                                                        return null;
+                                                    },
+                                                    AfterYouTakeAction = async (effect, action) => {
+                                                        effect.ExpiresAt = ExpirationCondition.Immediately;
+                                                    }
+                                                });
+                                            }
+                                        },
+                                    });
+                                }))
+                            .WithTargetingTooltip((Func<CombatAction, Creature, int, string>)((power, target, index) => power.Description)));
+                        }
+                    });
+                }
+            } else if (summoner.HasFeat(scAngerPhantom)) {
+                eidolon.AddQEffect(new QEffect() {
+                    ProvideMainAction = effect => {
+                        return new ActionPossibility(new CombatAction(effect.Owner, illFrenziedAssault, "Frenzied Assault", new Trait[4] {
+                            tSummoner, Trait.Basic, Trait.AlwaysHits, Trait.IsHostile },
+                          "Make two Strikes against the same target, one with each of your melee natural weapon attacks, each using your current multiple attack penalty." +
+                          "\n\nCombine the damage for the purposes of weakness and resistance. This counts as two attacks when calculating your multiple attack penalty.", (Target)Target.Melee())
+                            .WithActionCost(2)
+                            .WithEffectOnChosenTargets((Func<Creature, ChosenTargets, Task>)(async (self, targets) => {
+                                int map = self.Actions.AttackedThisManyTimesThisTurn;
+
+                                Creature enemy = targets.ChosenCreature;
+
+                                await self.MakeStrike(enemy, self.UnarmedStrike, map);
+                                await self.MakeStrike(enemy, self.MeleeWeapons.ToArray()[1], map);
+
+                                GetSummoner(eidolon).Actions.AttackedThisManyTimesThisTurn = self.Actions.AttackedThisManyTimesThisTurn;
+                            }))
+                        .WithTargetingTooltip((Func<CombatAction, Creature, int, string>)((power, target, index) => power.Description)));
+                    }
+                });
+                if (eidolon.Level >= 7) {
+                    eidolon.AddQEffect(new QEffect() {
+                        ProvideMainAction = effect => {
+                            if (effect.Owner.HasEffect(qfSeethingFrenzy)) {
+                                return null;
+                            }
+                            return new ActionPossibility(new CombatAction(effect.Owner, illSeethingFrenzy, "Seething Frenzy", new Trait[] {
+                            tSummoner, Trait.Emotion, Trait.Mental, Trait.Concentrate },
+                                "Your eidolon enters a seething frenzy, disregarding its own safety to tear your foes apart. It gains temporary HP equal to its level, and a +4 damage bonus to its unarmed strike attacks, " +
+                                "but it takes a -2 penalty to AC. The rage lasts until the end of the encounter, and leaves your eidolon fatigued if they leave early.", (Target)Target.Self())
+                                .WithActionCost(1)
+                                .WithSoundEffect(SfxName.BeastRoar)
+                                .WithEffectOnSelf((async (self) => {
+                                    self.GainTemporaryHP(self.Level);
+                                    self.AddQEffect(new QEffect("Seething Frenzy", "You take a -2 penalty to AC, but your strikes deal +4 bonus damage.") {
+                                        Illustration = illSeethingFrenzy,
+                                        Id = qfSeethingFrenzy,
+                                        BonusToDefenses = (effect, action, defence) => {
+                                            if (defence == Defense.AC) {
+                                                return new Bonus(-2, BonusType.Untyped, "Seething Frenzy");
+                                            }
+                                            return null;
+                                        },
+                                        BonusToDamage = (effect, action, target) => {
+                                            if (action.Name.StartsWith("Strike (") && action.HasTrait(Trait.Unarmed)) {
+                                                return new Bonus(4, BonusType.Untyped, "Seething Frenzy");
+                                            }
+                                            return null;
+                                        },
+                                        WhenExpires = effect => {
+                                            effect.Owner.AddQEffect(QEffect.Fatigued());
+                                        }
+                                    });
+                                }))
+                            );
+                        }
+                    });
+                }
             }
 
             foreach (EvolutionFeat feat in evoFeats) {
@@ -2528,14 +2790,15 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                     }),
                     BonusToSpellSaveDCs = qf => {
                         int sDC = GetSummoner(qf.Owner).Spellcasting.PrimarySpellcastingSource.GetSpellSaveDC();
-                        int eDC = qf.Owner.Spellcasting.PrimarySpellcastingSource.GetSpellSaveDC();
-                        return new Bonus(eDC >= sDC ? sDC - eDC : eDC - sDC, BonusType.Untyped, "Summoner Spellcasting DC");
+                        int eDC = qf.Owner.Proficiencies.Get(Trait.Spell).ToNumber(qf.Owner.Level) + qf.Owner.Spellcasting.PrimarySpellcastingSource.SpellcastingAbilityModifier + 10;
+
+                        return new Bonus(eDC >= sDC ? eDC - sDC : sDC - eDC, BonusType.Untyped, "Summoner Spellcasting DC", true);
                     },
                     BonusToAttackRolls = (qf, action, target) => {
                         if (action.HasTrait(Trait.Spell)) {
                             int sDC = GetSummoner(qf.Owner).Spellcasting.PrimarySpellcastingSource.GetSpellSaveDC();
-                            int eDC = qf.Owner.Spellcasting.PrimarySpellcastingSource.GetSpellSaveDC();
-                            return new Bonus(eDC >= sDC ? sDC - eDC : eDC - sDC, BonusType.Untyped, "Summoner Spellcasting Attack Bonus");
+                            int eDC = qf.Owner.Proficiencies.Get(Trait.Spell).ToNumber(qf.Owner.Level) + qf.Owner.Spellcasting.PrimarySpellcastingSource.SpellcastingAbilityModifier + 10;
+                            return new Bonus(eDC >= sDC ? eDC - sDC : sDC - eDC, BonusType.Untyped, "Summoner Spellcasting Attack Bonus", true);
                         }
                         return null;
                     },
@@ -2590,7 +2853,6 @@ namespace Dawnsbury.Mods.Classes.Summoner {
 
                         await HandleHealthShare(eidolon, summoner, action, SummonerClassEnums.InterceptKind.DAMAGE);
                     }),
-                    // TODO: Update this to only care about handwraps
                     BonusToSkillChecks = (Func<Skill, CombatAction, Creature?, Bonus?>)((skill, action, creature) => {
                         Item naturalWeapon1 = action.Owner.UnarmedStrike;
                         Item naturalWeapon2 = action.Owner.QEffects.FirstOrDefault(qf => qf.AdditionalUnarmedStrike != null && qf.AdditionalUnarmedStrike.WeaponProperties.Melee).AdditionalUnarmedStrike;

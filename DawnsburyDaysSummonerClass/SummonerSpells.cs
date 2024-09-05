@@ -177,10 +177,8 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                             BonusToDefenses = (qf, action, target) => {
                                 return new Bonus(1, BonusType.Status, "Reinforce Eidolon");
                             },
-                            StateCheck = (qfResistance =>
-                                qfResistance.Owner.WeaknessAndResistance.Hardness = 1),
-                            WhenExpires = qf => {
-                                qf.Owner.WeaknessAndResistance.Hardness = 0;
+                            StateCheck = qfResistance => {
+                                qfResistance.Owner.WeaknessAndResistance.AddResistanceAllExcept(Math.Max(1, spellLevel / 2), new DamageKind[] { });
                             },
                             ExpiresAt = ExpirationCondition.ExpiresAtStartOfSourcesTurn,
                         };
@@ -326,7 +324,7 @@ namespace Dawnsbury.Mods.Classes.Summoner {
             return damageKind.HumanizeTitleCase2();
         }
 
-        private static int GetDCByLevel(int level) {
+        internal static int GetDCByLevel(int level) {
             switch (level) {
                 case 0:
                     return 14;

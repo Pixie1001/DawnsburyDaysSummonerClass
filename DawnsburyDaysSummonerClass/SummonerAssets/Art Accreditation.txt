@@ -8,10 +8,10 @@ Unicorn.png: Origional image has fallen into the public domain. For more informa
 
 ButterflyFairy.png: Origional image has fallen into the public domain. For more information, please see: https://commons.wikimedia.org/wiki/File:SophieAndersonTakethefairfaceofWoman.jpg
 
-BeastsCharge.png, AngelicAegis.png, DraconicFrenzy.png: Origional images have been altered. Created by Unity Asset Store user 'Blink'. Please support the origional artist here: https://assetstore.unity.com/packages/2d/gui/icons/free-rpg-fantasy-spell-icons-200511
+FrenziedAssault.png, SeethingFrenzy.png, BeastsCharge.png, AngelicAegis.png, DraconicFrenzy.png: Origional images have been altered. Created by Unity Asset Store user 'Blink'. Please support the origional artist here: https://assetstore.unity.com/packages/2d/gui/icons/free-rpg-fantasy-spell-icons-200511
 
 Drider.png, Chimera.png, EvilUnicorn.png, Lion.png, Succubus.png, WolfEidolon.png: Origional images have been altered. Created by Unity Asset Store user 'Potion Junkies'. Please support the origional artist here: https://assetstore.unity.com/packages/2d/characters/greek-fantasy-enemies-204779
 
-OstentatiousArrival.png, TandemStrike.png, Parry.png, PrimalRoar.png, DevotionStance.png, Dismiss.png, EidolonBoost.png, EvolutionSurge.png, ExtendBoost.png, LifeLink.png, ReinforceEidolon.png & TandemMovement.png: Origional images have been altered. Created by Itch.io user 'Wenrexa'. Please support the origional artist here: https://wenrexa.itch.io/spells-5
+DisciplineTheLegion.png, OstentatiousArrival.png, TandemStrike.png, Parry.png, PrimalRoar.png, DevotionStance.png, Dismiss.png, EidolonBoost.png, EvolutionSurge.png, ExtendBoost.png, LifeLink.png, ReinforceEidolon.png & TandemMovement.png: Origional images have been altered. Created by Itch.io user 'Wenrexa'. Please support the origional artist here: https://wenrexa.itch.io/spells-5
 
 EidolonPortraits/ConvertedbaseGameAssets/: Everything in this folder is taken from the base game assets of DawnsburyDays, and altered or recoloured by this mod's auther. Please see the game's credits to support the origional artist.
