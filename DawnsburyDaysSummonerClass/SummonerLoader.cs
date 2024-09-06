@@ -825,6 +825,7 @@ namespace Dawnsbury.Mods.Classes.Summoner {
             foreach (SpellId spell in (List<SpellId>)moddedSpells) {
                 moddedSpells2.Add(AllSpells.CreateModernSpellTemplate(spell, tSummoner));
             }
+            moddedSpells2 = moddedSpells2.Where(sp => (sp.HasTrait(Trait.Cantrip) || sp.SpellLevel <= 2) && (!sp.HasTrait(Trait.Focus) && !sp.HasTrait(Trait.Uncommon))).ToList();
             allSpells = allSpells.Concat(moddedSpells2).ToList();
 
             foreach (Spell spell in allSpells) {
@@ -851,10 +852,6 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                 new Trait[] { tSummoner }, (Action<Creature>)null, null)
             .WithOnSheet(sheet => {
                 if (sheet.HasFeat(scFeyEidolon)) {
-                    //if (true && true && (true || (false && (false || true || false)))) {
-                    //    int test = 4;
-                    //}
-
                     sheet.AddSelectionOptionRightNow(new MultipleFeatSelectionOption("EidolonCantrip", "Eidolon Cantrips", -1, ft => ft.HasTrait(tEidolonSpellFeat) && ft.HasTrait(Trait.Cantrip) &&
                     (ft.HasTrait(sheet.SpellRepertoires[tSummoner].SpellList) || (ft.HasTrait(Trait.Arcane) && (ft.HasTrait(Trait.Enchantment) || ft.HasTrait(Trait.Illusion) || ft.HasTrait(Trait.Mental)))), 2));
                 } else {
@@ -867,9 +864,6 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                 new Trait[] { tSummoner }, (Action<Creature>)null, null)
             .WithOnSheet(sheet => {
                 if (sheet.HasFeat(scFeyEidolon)) {
-                    sheet.AddSelectionOptionRightNow(new MultipleFeatSelectionOption("EidolonCantrip", "Eidolon Cantrips", -1, ft => ft.HasTrait(tEidolonSpellFeat) && ft.HasTrait(Trait.Cantrip) &&
-                    (ft.HasTrait(sheet.SpellRepertoires[tSummoner].SpellList) || (ft.HasTrait(Trait.Arcane) && (ft.HasTrait(Trait.Enchantment) || ft.HasTrait(Trait.Illusion) || ft.HasTrait(Trait.Mental)))), 2));
-
                     sheet.AddSelectionOptionRightNow(new MultipleFeatSelectionOption("Eidolon2ndLevelSpell", "Level 2 Eidolon Spell", -1, ft => ft.HasTrait(tEidolonSpellFeat) &&
                     ft.HasTrait(tEidolonSpellLvl2) && (ft.HasTrait(sheet.SpellRepertoires[tSummoner].SpellList) || (ft.HasTrait(Trait.Arcane) && (ft.HasTrait(Trait.Enchantment) || ft.HasTrait(Trait.Illusion) || ft.HasTrait(Trait.Mental)))), 1));
                     sheet.AddSelectionOptionRightNow(new MultipleFeatSelectionOption("Eidolon1stLevelSpell", "Level 1 Eidolon Spell", -1, ft => ft.HasTrait(tEidolonSpellFeat) &&

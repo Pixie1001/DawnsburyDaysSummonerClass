@@ -198,14 +198,8 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                                     Source = caster,
                                     CountsAsABuff = true,
                                     Illustration = illReinforceEidolon,
-                                    BonusToDefenses = (qf, action, target) => {
-                                        return new Bonus(1, BonusType.Status, "Reinforce Eidolon");
-                                    },
-                                    StateCheck = (qfResistance =>
-                                        qfResistance.Owner.WeaknessAndResistance.Hardness = 1),
-                                    WhenExpires = qf => {
-                                        qf.Owner.WeaknessAndResistance.Hardness = 0;
-                                    },
+                                    BonusToDefenses = buff.BonusToDefenses,
+                                    StateCheck = buff.StateCheck,
                                     ExpiresAt = buff.ExpiresAt,
                                     Value = buff.Value
                                 };
