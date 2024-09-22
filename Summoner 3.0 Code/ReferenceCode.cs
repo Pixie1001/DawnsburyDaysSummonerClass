@@ -6,6 +6,14 @@ using Dawnsbury.Core.Mechanics.Enumerations;
 using Dawnsbury.Core.Mechanics.Treasure;
 using Dawnsbury.Modding;
 
+//YourStrikeGainsDamageType = ((qfVB, action) => {
+
+//    if (action.Item.HasTrait(tVersatileB)) {
+//        return DamageKind.Bludgeoning;
+//    }
+//    return null;
+//})
+
 //spellSource.WithSpells(new SpellId[] { SpellId.Bless, SpellId.ScorchingRay, SpellId.ScorchingRay, SpellId.ScorchingRay, SpellId.Fireball, SpellId.Fireball });
 //spellSource.FocusSpells.Add(AllSpells.CreateSpellInCombat(spells[SummonerSpellId.EidolonsWrath], eidolon, 3, tSummoner));
 

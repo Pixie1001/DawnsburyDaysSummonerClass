@@ -177,10 +177,8 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                             BonusToDefenses = (qf, action, target) => {
                                 return new Bonus(1, BonusType.Status, "Reinforce Eidolon");
                             },
-                            StateCheck = (qfResistance =>
-                                qfResistance.Owner.WeaknessAndResistance.Hardness = 1),
-                            WhenExpires = qf => {
-                                qf.Owner.WeaknessAndResistance.Hardness = 0;
+                            StateCheck = qfResistance => {
+                                qfResistance.Owner.WeaknessAndResistance.AddResistanceAllExcept(Math.Max(1, spellLevel / 2), new DamageKind[] { });
                             },
                             ExpiresAt = ExpirationCondition.ExpiresAtStartOfSourcesTurn,
                         };
@@ -200,14 +198,8 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                                     Source = caster,
                                     CountsAsABuff = true,
                                     Illustration = illReinforceEidolon,
-                                    BonusToDefenses = (qf, action, target) => {
-                                        return new Bonus(1, BonusType.Status, "Reinforce Eidolon");
-                                    },
-                                    StateCheck = (qfResistance =>
-                                        qfResistance.Owner.WeaknessAndResistance.Hardness = 1),
-                                    WhenExpires = qf => {
-                                        qf.Owner.WeaknessAndResistance.Hardness = 0;
-                                    },
+                                    BonusToDefenses = buff.BonusToDefenses,
+                                    StateCheck = buff.StateCheck,
                                     ExpiresAt = buff.ExpiresAt,
                                     Value = buff.Value
                                 };
@@ -303,7 +295,7 @@ namespace Dawnsbury.Mods.Classes.Summoner {
             return spellList;
         }
 
-        private static Skill SpellTraditionToSkill(Trait tradition) {
+        internal static Skill SpellTraditionToSkill(Trait tradition) {
             switch (tradition) {
                 case Trait.Divine:
                     return Skill.Religion;
@@ -322,11 +314,11 @@ namespace Dawnsbury.Mods.Classes.Summoner {
             }
         }
 
-        private static string HumanizeDamageKind(DamageKind damageKind) {
+        internal static string HumanizeDamageKind(DamageKind damageKind) {
             return damageKind.HumanizeTitleCase2();
         }
 
-        private static int GetDCByLevel(int level) {
+        internal static int GetDCByLevel(int level) {
             switch (level) {
                 case 0:
                     return 14;
