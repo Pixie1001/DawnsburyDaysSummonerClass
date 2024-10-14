@@ -836,6 +836,11 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                     if (spell.MinimumSpellLevel >= 2)
                         traits.Add(tEidolonSpellLvl2);
                 }
+
+                if (AllFeats.All.FirstOrDefault(ft => ft.Name == $"EidolonSpellGainFeat({spell.Name}-Cantrip)") != null) {
+                    continue;
+                }
+
                 Feat temp = new EvolutionFeat(ModManager.RegisterFeatName($"EidolonSpellGainFeat({spell.Name})", spell.Name), spell.MinimumSpellLevel, "", AllSpells.CreateModernSpell(spell.SpellId, null, 1, false, spell.CombatActionSpell.SpellInformation).CombatActionSpell.Description, spell.Traits.ToList().Concat(traits).ToArray(), e => {
                     if (spell.MinimumSpellLevel < 2) {
                         e.Spellcasting.PrimarySpellcastingSource.WithSpells(new SpellId[] { spell.SpellId });
@@ -2676,7 +2681,8 @@ namespace Dawnsbury.Mods.Classes.Summoner {
             List<Trait> traits = new List<Trait>();
             traits.Add(tEidolon);
             for (int i = 1; i < alignment.Count; i++) {
-                traits.Add(alignment[i]);
+                if (alignment[i] != Trait.Mod)
+                    traits.Add(alignment[i]);
             }
             int perception = wisdom + (summoner.Proficiencies.AllProficiencies[Trait.Perception] == Proficiency.Trained ? trained : expert) + level;
             int speed1 = 5;
@@ -3110,17 +3116,16 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                         int healing = self.HP - partner.HP;
                         partner.Heal($"{healing}", selfShareHP.CA);
                     } else if (partner.HP > self.HP) {
-                        int healing = partner.HP - self.HP;
+                        int healing = partner.HP - self.HP; 
                         self.Heal($"{healing}", partnerShareHP.CA);
                     }
                 }
             } else {
-                // Invividual effect
                 if (selfShareHP.HealOrHarm(self) == SummonerClassEnums.EffectKind.HARM) {
-                    int damage = totalHPPartner - totalHPSelf;
+                    int damage = (selfShareHP.HP + selfShareHP.TempHP) - totalHPSelf;
                     await self.DealDirectDamage(selfShareHP.CA, DiceFormula.FromText($"{damage}"), partner, CheckResult.Success, DamageKind.Untyped);
                 } else if (selfShareHP.HealOrHarm(self) == SummonerClassEnums.EffectKind.HEAL) {
-                    int healing = self.HP - partner.HP;
+                    int healing = selfShareHP.HP - self.HP;
                     partner.Heal($"{healing}", selfShareHP.CA);
                 }
             }
