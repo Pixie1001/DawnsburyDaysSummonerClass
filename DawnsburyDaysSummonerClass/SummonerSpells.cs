@@ -74,7 +74,7 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                     .WithVariants(new SpellVariant[2] {
                     new SpellVariant("Amphibious", "Amphibious Evolution Surge", (Illustration) IllustrationName.ElementWater),
                     new SpellVariant("Agility", "Agility Evolution Surge", (Illustration) IllustrationName.FleetStep)})
-                    .WithCreateVariantDescription((Func<int, SpellVariant, string>)((_, variant) => {
+                    .WithCreateVariantDescription(((_, variant) => {
                         string text = "Until the end of the encounter, your eidolon ";
                         if (variant.Id == "Amphibious") {
                             return text + "gains a swim speed.";
@@ -86,17 +86,16 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                     .WithEffectOnEachTarget((Delegates.EffectOnEachTarget)(async (spell, caster, target, result) => {
                         SpellVariant variant = spell.ChosenVariant;
                         if (variant.Id == "Amphibious") {
-                            target.AddQEffect(QEffect.Swimming().WithExpirationNever());
                             target.AddQEffect(new QEffect(
                             variant.Name, "Your eidolon gains a swim speed.",
                             ExpirationCondition.Never, caster, variant.Illustration) {
+                                Id = QEffectId.Swimming,
                                 CountsAsABuff = true
                             });
                         } else if (variant.Id == "Agility") {
                             target.AddQEffect(new QEffect(
                             variant.Name, "Your eidolon gains a +20ft status bonus to its speed.",
                             ExpirationCondition.Never, caster, variant.Illustration) {
-                                Id = QEffectId.Swimming,
                                 CountsAsABuff = true,
                                 BonusToAllSpeeds = ((Func<QEffect, Bonus>)(_ => new Bonus(4, BonusType.Status, "Evolution Surge")))
                             });

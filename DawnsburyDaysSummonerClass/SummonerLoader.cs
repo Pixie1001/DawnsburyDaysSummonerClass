@@ -1973,7 +1973,9 @@ namespace Dawnsbury.Mods.Classes.Summoner {
             Feat pStatsFeat = summoner.PersistentCharacterSheet.Calculated.AllFeats.FirstOrDefault((Func<Feat, bool>)(ft => ft.HasTrait(tPrimaryAttackStats)));
             List<Trait> pStats = new List<Trait>() { Trait.Unarmed };
             for (int i = 2; i < pStatsFeat.Traits.Count; i++) {
-                pStats.Add(pStatsFeat.Traits[i]);
+                if (pStatsFeat.Traits[i] != Trait.Mod) {
+                    pStats.Add(pStatsFeat.Traits[i]);
+                }
             }
             List<Trait> sStats = new List<Trait>() { Trait.Unarmed, Trait.Finesse, Trait.Agile };
 
@@ -3277,7 +3279,7 @@ namespace Dawnsbury.Mods.Classes.Summoner {
                         ExpiresAt = ExpirationCondition.ExpiresAtEndOfYourTurn,
                         Illustration = illActTogetherStatus,
                         AfterYouTakeAction = (Func<QEffect, CombatAction, Task>)(async (qf, action) => {
-                            if (action.ActionCost != 0) {
+                            if (action.ActuallySpentActions > 0) {
                                 self.RemoveAllQEffects(qf => qf.Id == qfActTogetherToggle);
                                 self.AddQEffect(new QEffect {
                                     PreventTakingAction = action => action.Name == "Enable Act Together" ? "Act together already used this round" : null,
